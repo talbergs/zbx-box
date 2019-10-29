@@ -98,11 +98,13 @@ while [[ $# > 0 ]];do case $1 in
 
         docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/zbx-builder-schema
 
-        docker exec -t zbx-box-db psql -U postgres -c "DROP DATABASE IF EXISTS \"$REF\""
-        docker exec -t zbx-box-db psql -U postgres -c "CREATE DATABASE \"$REF\""
-        docker exec -t zbx-box-db psql -U postgres -d "$REF" --file /www/$REF/database/postgresql/schema.sql
-        docker exec -t zbx-box-db psql -U postgres -d "$REF" --file /www/$REF/database/postgresql/images.sql
-        docker exec -t zbx-box-db psql -U postgres -d "$REF" --file /www/$REF/database/postgresql/data.sql
+        echo "zbx-box: Creating recreating database '$REF'"
+        docker exec -t zbx-box-db psql -q -U postgres -c "DROP DATABASE IF EXISTS \"$REF\""
+        docker exec -t zbx-box-db psql -q -U postgres -c "CREATE DATABASE \"$REF\""
+        docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/schema.sql
+        docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/images.sql
+        docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/data.sql
+        echo "zbx-box: Done creating recreating database '$REF'"
     );exit;;
     #- <ref?> Creates and starts server 
     -S | --create-server ) (
