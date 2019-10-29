@@ -2,4 +2,3 @@
 /data/*
 !/data/.keepme
 /.persist/
-/decoration/vendor/
