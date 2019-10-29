@@ -1,0 +1,136 @@
+#!/bin/bash
+source zbx-script-header
+## Interface for zbx-box.
+
+COMMON_FLAGS='--rm --detach --network zbx-box --volume zbx-box:/www --restart no '
+
+while [[ $# > 0 ]];do case $1 in
+    #- gonna have to pull again
+    -GU| --i-give-up) docker system prune --volumes --all --force;exit;;
+    #- Ensure all services are up
+    -U | --up ) (
+
+        [ -z "$(docker network ls -f name='^zbx-box$' -q)" ] && docker network create zbx-box
+
+        [ -z "$(docker volume ls -f name='^zbx-box-data$' -q)" ] && docker volume create \
+            --driver local \
+            --opt type=none \
+            --opt device=$ZBX_BOX_ROOT/data \
+            --opt o=bind \
+            --name zbx-box-data
+
+        [ -z "$(docker volume ls -f name='^zbx-box$' -q)" ] && docker volume create \
+            --driver local \
+            --opt type=none \
+            --opt device=$WORKTREE \
+            --opt o=bind \
+            --name zbx-box
+
+        [ -z "$(docker ps -f name=zbx-box-webgrind -q)" ] && docker run $COMMON_FLAGS \
+            --name zbx-box-webgrind \
+            --volume zbx-box-data:/data \
+            -p 8080:8080 \
+            --env WEBGRIND_PROFILER_DIR=/data/profiles \
+            wodby/webgrind:1.6-1.11.11
+
+        [ -z "$(docker ps -f name=zbx-box-php -q)" ] && docker run $COMMON_FLAGS \
+            --name zbx-box-php \
+            --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
+            --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
+            --volume zbx-box-data:/data \
+            talbergs/zbx-box-php54
+
+        [ -z "$(docker ps -f name=zbx-box-db -q)" ] && docker run $COMMON_FLAGS \
+            --name zbx-box-db \
+            --volume "$ZBX_BOX_ROOT"/.persist/postgres:/var/lib/postgresql/data \
+            postgres
+
+        # The self_signed is broken in caddy since 0.11.1 (in v2.0 (at 2020) it will work again)
+        # TIP:
+        #  chrome://flags/#allow-insecure-localhost
+        #  chrome://flags/#unsafely-treat-insecure-origin-as-secure
+        [ -z "$(docker ps -f name=zbx-box-http -q)" ] && docker run $COMMON_FLAGS \
+            --name zbx-box-http \
+            -p 80:80 \
+            -p 443:443 \
+            --volume "$ZBX_BOX_ROOT"/.persist/.caddy:/etc/caddycerts \
+            --volume "$ZBX_BOX_ROOT"/Caddyfile:/etc/Caddyfile \
+            abiosoft/caddy:0.11.0
+
+        # Can be used to orchistrate containers or serve dashboard information with some action buttons
+        [ -z "$(docker ps -f name=zbx-box-builder -q)" ] && docker run $COMMON_FLAGS \
+            -td \
+            --volume $ZBX_BOX_ROOT:/usr/local \
+            --name zbx-box-builder \
+            --volume /var/run/docker.sock:/var/run/docker.sock \
+            --cpus 8 \
+            --memory-swappiness 0 \
+            --user $(id -u ${USER}):$(id -g ${USER}) \
+            talbergs/zbx-box-builder
+
+    );exit;;
+
+    #- Take all services down
+    -D | --down ) (
+        [ ! -z "$(docker ps -f name=zbx-box-php -q)" ] && docker stop zbx-box-php
+        [ ! -z "$(docker ps -f name=zbx-box-http -q)" ] && docker stop zbx-box-http
+        [ ! -z "$(docker ps -f name=zbx-box-db -q)" ] && docker stop zbx-box-db
+        [ ! -z "$(docker ps -f name=zbx-box-builder -q)" ] && docker stop zbx-box-builder
+    );exit;;
+    #- Take out just all , except for images
+    -Dd | --dead-down ) (
+        docker rm -f $(docker ps -f name='^zbx-box' -q)
+        docker network rm $(docker network ls -f name='^zbx-box' -q)
+        docker volume rm $(docker volume ls -f name='^zbx-box' -q)
+    );exit;;
+    #- <ref?> Creates and seeds schema 
+    -C | --create-schema ) (
+        [ -z "$(docker ps -f name='^zbx-box-builder$' -q)" ] && echo 'Service "zbx-box-builder" is not running.' && exit 2;
+        [ -z "$(docker ps -f name='^zbx-box-db$' -q)" ] && echo 'Service "zbx-box-db" is not running.' && exit 3;
+
+        case $2 in
+        . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
+        '') REF=$(zbx-util-guess-ref);;
+        * ) REF=$(zbx-util-validate-zref $2);shift;;
+        esac
+
+        [ -z $REF ] && exit 2;
+
+        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/zbx-builder-schema
+
+        docker exec -t zbx-box-db psql -U postgres -c "DROP DATABASE IF EXISTS \"$REF\""
+        docker exec -t zbx-box-db psql -U postgres -c "CREATE DATABASE \"$REF\""
+        docker exec -t zbx-box-db psql -U postgres -d "$REF" --file /www/$REF/database/postgresql/schema.sql
+        docker exec -t zbx-box-db psql -U postgres -d "$REF" --file /www/$REF/database/postgresql/images.sql
+        docker exec -t zbx-box-db psql -U postgres -d "$REF" --file /www/$REF/database/postgresql/data.sql
+    );exit;;
+    #- <ref?> Creates and starts server 
+    -S | --create-server ) (
+        [ -z "$(docker ps -f name=zbx-box-builder -q)" ] && echo 'Service "zbx-box-builder" is not running.' && exit 2;
+
+        case $2 in
+        . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
+        '') REF=$(zbx-util-guess-ref);;
+        * ) REF=$(zbx-util-validate-zref $2);shift;;
+        esac
+
+        [ -z $REF ] && exit 2;
+
+        DREF=$(echo $REF | tr / _)
+        if [ ! -z "$(docker ps -f name=zbx-box-server-$DREF -q)" ];then
+            read -p "zbx-box-server-$DREF exists. Recreate? (yN) > " YES
+            if [ "$YES" = y ];then docker rm -f zbx-box-server-$DREF;else exit;fi
+        fi
+
+        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/zbx-builder-server
+        zbx+config "$REF"
+        docker run $COMMON_FLAGS -t \
+            --name zbx-box-server-$DREF \
+            talbergs/zbx-box-server
+
+        docker exec zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_server
+
+    );exit;;
+    #- The symphony t helpers --follow command
+    -T | --t-follow ) docker exec -it zbx-box-builder nc -lkU /www/debug.sock;exit 0;;
+esac;shift;done

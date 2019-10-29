@@ -1,0 +1,17 @@
+#!/bin/bash
+source zbx-script-header
+## Util: gives PWD based ref or empty str if unable to guess (fd1)
+## Always exit 0
+
+guess_ref() {
+    local tl=$(git rev-parse --show-toplevel 2> /dev/null)
+    local bn=$(basename $tl 2> /dev/null)
+    case $tl in
+    */feature/* ) echo feature/$bn ;;
+    */release/* ) echo release/$bn ;;
+    */master    ) echo master ;;
+    *           ) >&2 echo "Cannot guess REF. Provide one." ;;
+    esac
+}
+
+guess_ref

@@ -1,0 +1,27 @@
+#!/bin/bash
+## Accepts a file name and outputs documentation.
+## If a line begins  with "##" (no leading spaces) these lines make up bolded summary.
+## If a line begins  with "#-" (leading spaces allowed) this line will serve as comment
+## for option that is declared in next line.
+## As an example:
+# during case statement...
+case /dev/null in
+#- This increases verbose level.
+-V|--verbose) ;;
+#- Force colored output
+-c|--ascii) ;;
+esac
+[[ -z $1 ]] && $0 "$0" && exit 9
+
+tput bold
+grep '^##' $1 | sed 's/^##\s*//' 
+tput sgr 0
+
+grep '^\s*#-' -A 1 $1 \
+    | sed 's/^\s*#-//' \
+    | cut -d')' -f 1 \
+    | sed 's/^\s*//'\
+    | awk \
+        -v _grn="$(tput setaf 2)" \
+        -v _rst="$(tput sgr 0)" \
+        '{l=$0;getline;printf(" %-40s %s\n", _rst _grn $0, _rst l)}'

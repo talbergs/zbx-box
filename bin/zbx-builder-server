@@ -1,0 +1,15 @@
+#!/bin/bash
+set -e
+
+[ ! -e ./compile ] && ./bootstrap.sh
+
+./configure -q \
+    --enable-server \
+    --enable-agent \
+    --with-libcurl \
+    --enable-proxy \
+    --with-postgresql \
+    --prefix="$PWD/dist"
+
+make
+make install

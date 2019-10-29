@@ -1,0 +1,18 @@
+#!/bin/bash
+source zbx-script-header
+
+cd $ZBX_BOX_ROOT
+
+## Show environment
+echo ZBX_BOX_ROOT=$ZBX_BOX_ROOT
+echo WORKTREE=$WORKTREE
+echo GITREMOTE=$GITREMOTE
+echo
+
+## Show current zbx-box services
+docker ps --filter name='^zbx-box'
+
+echo
+cd $WORKTREE/master
+git worktree list
+# git worktree list --porcelain

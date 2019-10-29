@@ -1,0 +1,17 @@
+#!/bin/bash
+source zbx-script-header
+## Shorthand to open browser.
+## Usage:
+## >$ zbx,web
+
+case $1 in
+. ) REF=$(echo "$REFS" | fzf);shift;;
+'') REF=$(zbx-util-guess-ref);;
+* ) REF=$(zbx-util-validate-zref $1);shift;;
+esac
+
+[ -z $REF ] && exit 1
+
+URL=${JIRAURL%/}/browse/$(zbx-util-ref-to-issue $REF)
+echo $URL
+$BROWSER $URL

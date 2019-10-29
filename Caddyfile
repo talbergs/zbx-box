@@ -1,0 +1,8 @@
+:80, :443 {
+    root /www
+    tls self_signed
+    gzip
+    # or brotli ?
+    fastcgi / zbx-box-php:9000 php
+    browse
+}

@@ -1,0 +1,88 @@
+#!/bin/bash
+source zbx-script-header
+
+# Docs {{{1
+## Main dev entry.
+## Usage:
+## > zbx,box <zref?> [--SWITCH..]
+##
+## <zref>: Possible values.
+## |  lowercase "m"  - master
+## |  a dot "."      - a menu to choose any remote ref in fzf
+## |  4.4            - refs/heads/release/4.4
+## |  "ZBX-1000-4.0" - refs/heads/feature/<CREATED-OR-UPDATED>
+## |  <not-given>    - determined from PWD or error
+##
+## <switches>:
+## | if create happens - auto enabled database and generate config flag
+##
+## If run without arguments, gives system overview information.
+
+# Ref {{{1
+case $1 in
+'') zbx-script-info && exit;;
+. ) REF=$(echo "$REFS" | fzf);shift;;
+m*) REF=master;shift;;
+-*) REF=$(zbx-util-guess-ref);;
+* ) REF=$(zbx-util-validate-zref $1);shift;;
+esac
+
+[ -z "$REF" ] && exit 2;
+
+NOTIF=
+CODEPATH="$WORKTREE/$REF"
+ALLOW_CREATE=${REF##release*}
+REMOTE_EXISTS=$(echo "$REFS" | ag "^$REF$" | cat)
+
+if [ -z $ALLOW_CREATE ] && [ -z $REMOTE_EXISTS ];then
+    >&2 echo ref: $REF not found in remote. Exiting.
+    exit 3
+fi
+
+# Git {{{1
+cd "$WORKTREE/master" && git fetch
+
+if [ $ALLOW_CREATE ] && [ -z $REMOTE_EXISTS ];then
+    BASEREF="origin/$(\
+        echo "$REFS" | fzf \
+            --header "About to create '$REF'!" \
+            --prompt "Choose which REF will '$REF' be based on: > " \
+            --query "release"
+    )"
+
+    git worktree add --no-track -f -b "$REF" "$CODEPATH" "$BASEREF"
+    cd $CODEPATH
+    git push origin HEAD
+    zbx+config
+    FLAG_DB=1
+    NOTIF="Created $REF"
+else
+    echo updating $REF for you...
+    if [ ! -d "$CODEPATH" ];then
+        FLAG_DB=1
+        git worktree add -f "$CODEPATH" "$REF"
+        NOTIF="Added $REF"
+    else
+        NOTIF="Updated $REF"
+    fi
+fi
+
+cd $CODEPATH
+git branch --set-upstream-to "origin/$REF"
+
+# Switches {{{1
+while [[ $# > 0 ]];do case $1 in
+    #- this will build fresh data.sql and recreate database (ref-named)
+    -D  | --database) FLAG_DB=1 ;;
+    #- build zabbix server and agent
+    -S  | --srv) FLAG_SRV=1 ;;
+esac;shift;done
+
+[ $FLAG_DB ] && zbx,ddev -C "$REF"
+[ $FLAG_SRV ] && zbx,ddev -S "$REF" && zbx+config
+
+[ -z "$REMOTE_EXISTS" ] && zbx,web
+
+[ ! -z "$NOTIF" ] && notify-send "$NOTIF"
+
+# vim: fdm=marker

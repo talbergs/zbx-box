@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+[ ! -e ./compile ] && ./bootstrap.sh
+
+./configure -q --with-postgresql
+
+make dbschema

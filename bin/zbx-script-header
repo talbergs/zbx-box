@@ -1,0 +1,24 @@
+#!/bin/bash
+## An utility used as a shorthand in scripts, providing -h as a first argument
+## for help to be printed.
+
+set -e
+# set -o pipefail
+
+if [[ -z $ZBX_ENV_SOURCED ]];then
+
+    DEPS=('fzf ag git docker')
+    DEP_MSF='Missing host dependency: "%s". Install that and come back.'
+    for d in $DEPS;do
+        [ "$(which $d 2> /dev/null)" ] || (printf "\n\t$DEP_MSF\n\n" $d && exit 13)
+    done
+
+    case $1 in
+        -h | --help )zbx.-h $0 && exit;;
+        -e | --edit )$EDITOR $0;exit;;
+        -c | --cat )cat $0;exit;;
+    esac
+
+    source zbx-script-env
+
+fi

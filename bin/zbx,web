@@ -1,0 +1,19 @@
+#!/bin/bash
+source zbx-script-header
+## Shorthand to open browser.
+## Usage:
+## >$ zbx,web # to guess
+## >$ zbx,web . # to open fzf menu
+## >$ zbx,web <zref> # to create link
+
+case $1 in
+. ) REF=$(echo "$LOCALREFS" | fzf);shift;;
+m*) REF=master;shift;;
+'') REF=$(zbx-util-guess-ref);;
+* ) REF=$(zbx-util-validate-zref $1);shift;;
+esac
+
+[ -z $REF ] && exit 1
+[ -z "$(pgrep $BROWSER)" ] && echo no existing $BROWSER session && exit 2
+
+$BROWSER "${WEBTLD%/}/$REF/frontends/php" &> /dev/null
