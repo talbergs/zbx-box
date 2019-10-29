@@ -12,6 +12,8 @@ esac
 ## Also ensures environment, by setting services up and cloning base repo if needed.
 
 export ZBX_BOX_ROOT=$(cd $(dirname $0)/../;pwd)
+
+[ ! -f "$ZBX_BOX_ROOT/.env" ] && >&2 echo "Not found: $ZBX_BOX_ROOT/.env" && exit 4
 source $ZBX_BOX_ROOT/.env
 
 mkdir -p $WORKTREE/{master,{feature,release}}
