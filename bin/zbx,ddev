@@ -96,15 +96,17 @@ while [[ $# > 0 ]];do case $1 in
 
         [ -z $REF ] && exit 2;
 
+        echo "zbx-box: Building schema"
         docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/zbx-builder-schema
+        echo "zbx-box: Done building schema"
 
-        echo "zbx-box: Creating recreating database '$REF'"
+        echo "zbx-box: Recreating database '$REF'"
         docker exec -t zbx-box-db psql -q -U postgres -c "DROP DATABASE IF EXISTS \"$REF\""
         docker exec -t zbx-box-db psql -q -U postgres -c "CREATE DATABASE \"$REF\""
         docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/schema.sql
         docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/images.sql
         docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/data.sql
-        echo "zbx-box: Done creating recreating database '$REF'"
+        echo "zbx-box: Done recreating database '$REF'"
     );exit;;
     #- <ref?> Creates and starts server 
     -S | --create-server ) (
@@ -125,7 +127,9 @@ while [[ $# > 0 ]];do case $1 in
         fi
 
         docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/zbx-builder-server
-        zbx+config "$REF"
+
+        [ ! -d "$CODEPATH/$REF/dist/etc/zabbix_server.conf.d/" ] && zbx+config "$REF"
+
         docker run $COMMON_FLAGS -t \
             --name zbx-box-server-$DREF \
             talbergs/zbx-box-server

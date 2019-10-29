@@ -55,11 +55,15 @@ if [ $ALLOW_CREATE ] && [ -z $REMOTE_EXISTS ];then
     git push origin HEAD
     zbx+config
     FLAG_DB=1
+    FLAG_WEB=1
+    FLAG_CONF=1
     NOTIF="Created $REF"
 else
     echo updating $REF for you...
     if [ ! -d "$CODEPATH" ];then
         FLAG_DB=1
+        FLAG_WEB=1
+        FLAG_CONF=1
         git worktree add -f "$CODEPATH" "$REF"
         NOTIF="Added $REF"
     else
@@ -79,9 +83,9 @@ while [[ $# > 0 ]];do case $1 in
 esac;shift;done
 
 [ $FLAG_DB ] && zbx,ddev -C "$REF"
-[ $FLAG_SRV ] && zbx,ddev -S "$REF" && zbx+config
-
-[ -z "$REMOTE_EXISTS" ] && zbx,web
+[ $FLAG_SRV ] && zbx,ddev -S "$REF"
+[ $FLAG_CONF ] && zbx+config "$REF"
+[ $FLAG_WEB ] && zbx,web "$REF"
 
 [ ! -z "$NOTIF" ] && notify-send "$NOTIF"
 
