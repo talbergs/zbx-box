@@ -35,3 +35,4 @@ Checkpoints:
 - [ ] ellastic search stack
 - [ ] php profiler XProf + https://github.com/badoo/liveprof-ui/
 - [ ] I18n
+- [ ] clean abandoned data (databases etc) for deleted <Refs> (or any)
