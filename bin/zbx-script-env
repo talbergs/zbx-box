@@ -19,6 +19,9 @@ source $ZBX_BOX_ROOT/.env
 mkdir -p $WORKTREE/{master,{feature,release}}
 
 [ ! -d "$WORKTREE/master/.git" ] && git clone $GITREMOTE $WORKTREE/master
+[ ! -f "$WORKTREE/master/.git/hooks/deployed" ] \
+    && cp -RT "$ZBX_BOX_ROOT/git.hooks" "$WORKTREE/master/.git/hooks"
+
 # TODO bake these things: webgrind, opcache-gui, into dashboard
 [ ! -f "$WORKTREE/opcache-gui.php" ] && \
     wget https://raw.githubusercontent.com/amnuts/opcache-gui/master/index.php -O $WORKTREE/opcache-gui.php

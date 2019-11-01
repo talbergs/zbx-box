@@ -1,0 +1,24 @@
+#!/bin/bash
+# Attention! This script is incompatible with plan nine.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+# SHA1=$3
+
+#
+# Removes the "# Please enter the commit message..." help message.
+#
+# /usr/bin/perl -i.bak -ne 'print unless(m/^. Please enter the commit message/..m/^#$/)' "$COMMIT_MSG_FILE"
+
+#
+# Generates message header.
+#
+if [ -z $2 ];then
+    branch=$(zbx.resolve --ticket)
+    flags="$(git status --porcelain \
+        | grep '^[DRMAT]' \
+        | awk '{print "/"$2}' \
+        | zbx.flags)"
+
+    sed -i "1s;^;$flags [$branch] \n;" $COMMIT_MSG_FILE
+fi

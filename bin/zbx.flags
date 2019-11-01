@@ -1,0 +1,52 @@
+#!/bin/bash
+source zbx-script-header
+## Builds commit flags string based on file list.
+## Accepts standard input.or array of args.
+# if [[ $1 = -x ]];then set -x;trap read debug;shift;fi
+
+TAGS=..........
+
+if [[ $1 == -- ]]; then
+    echo -n $TAGS && exit 0
+fi
+
+API(){              TAGS=${TAGS:0:0}A${TAGS:1:10};}
+Documentation(){    TAGS=${TAGS:0:1}D${TAGS:2:10};}
+Frontend(){         TAGS=${TAGS:0:2}F${TAGS:3:10};}
+Agent(){            TAGS=${TAGS:0:3}G${TAGS:4:10};}
+Installation(){     TAGS=${TAGS:0:4}I${TAGS:5:10};}
+Javagaeway () {     TAGS=${TAGS:0:5}J${TAGS:6:10};}
+Appliance(){        TAGS=${TAGS:0:6}L${TAGS:7:10};}
+Proxy(){            TAGS=${TAGS:0:7}P${TAGS:8:10};}
+Server(){           TAGS=${TAGS:0:8}S${TAGS:9:10};}
+Templates(){        TAGS=${TAGS:0:9}T;}
+
+function testLine() {
+    # [ ! -f "$1" ] && exit 1
+    case "$1" in
+        *frontends/php/include/classes/api/*) API ;;
+        *frontends/php*) Frontend ;;
+        *src/libs/zbxdbupgrade/*) Installation ;;
+        *create/src/schema.tmpl*) Installation ;;
+        *create/src/data.tmpl*) Installation ;;
+        *ChangeLog.d/*) Documentation ;;
+        *create/src/*) Templates ;;
+        *templates/*) Templates ;;
+        # TODO all
+    esac
+}
+
+# piped lines
+if [ -p /dev/stdin ]; then
+    while IFS= read line; do
+        testLine "${line}"
+    done
+# input args
+else
+    [ -z "$1" ] && exit 2
+    for line in "$@"; do
+        testLine "${line}"
+    done
+fi
+
+echo -n $TAGS

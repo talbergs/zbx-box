@@ -1,0 +1,2 @@
+#!/bin/sh
+# TODO: make it pull info from jira if in feature branch, then notify if info has changed

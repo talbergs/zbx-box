@@ -14,7 +14,7 @@ Checkpoints:
 - [x] postgresql
 - [ ] oracle
 - [ ] mariadb
-- [ ] git hooks
+- [x] git hooks
 - [x] multiple zabbix servers (same port different TLD)
 - [x] self signed ssl
 - [x] php 5.4
