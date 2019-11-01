@@ -38,7 +38,7 @@ while [[ $# > 0 ]];do case $1 in
             --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
             --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
             --volume zbx-box-data:/data \
-            talbergs/zbx-box-php54
+            talbergs/zbx-box-php${PHP_VERSION}
 
         [ -z "$(docker ps -f name=zbx-box-db -q)" ] && docker run $COMMON_FLAGS \
             --name zbx-box-db \
@@ -91,6 +91,7 @@ while [[ $# > 0 ]];do case $1 in
         case $2 in
         . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
         '') REF=$(zbx-util-guess-ref);;
+        m*) REF=master;shift;;
         * ) REF=$(zbx-util-validate-zref $2);shift;;
         esac
 

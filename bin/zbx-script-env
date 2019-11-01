@@ -22,6 +22,7 @@ mkdir -p $WORKTREE/{master,{feature,release}}
 # TODO bake these things: webgrind, opcache-gui, into dashboard
 [ ! -f "$WORKTREE/opcache-gui.php" ] && \
     wget https://raw.githubusercontent.com/amnuts/opcache-gui/master/index.php -O $WORKTREE/opcache-gui.php
+[ ! -f "$WORKTREE/phpinfo.php" ] && echo '<?php phpinfo();' > "$WORKTREE/phpinfo.php"
 
 export ZBX_ENV_SOURCED=1
 
@@ -32,6 +33,7 @@ export WEBTLD=$WEBTLD
 export JIRAUSER=$JIRAUSER
 export JIRAURL=$JIRAURL
 export BITBUCKET_PROJECT=$BITBUCKET_PROJECT
+export PHP_VERSION=$PHP_VERSION
 
 export REFS=$(git ls-remote --refs --heads $GITREMOTE | sed 's|^.*heads/||g')
 export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^branch' | sed 's#^.*heads/##')

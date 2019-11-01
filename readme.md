@@ -18,7 +18,7 @@ Checkpoints:
 - [x] multiple zabbix servers (same port different TLD)
 - [x] self signed ssl
 - [x] php 5.4
-- [ ] php 7.4
+- [x] php 7.4
 - [ ] jira API integration (issue description)
 - [ ] emails (mailhog-view)
 - [x] http/2
