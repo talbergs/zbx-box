@@ -44,6 +44,10 @@ RUN ./configure \
 
 RUN make && make install
 
+COPY locale.gen /etc/locale.gen
+RUN locale-gen
+RUN pacman -S --noconfirm gettext
+
 EXPOSE 9000
 
 CMD ["/usr/local/bin/php-cgi", "-b", "0.0.0.0:9000"]

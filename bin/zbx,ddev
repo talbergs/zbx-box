@@ -5,6 +5,27 @@ source zbx-script-header
 COMMON_FLAGS='--rm --detach --network zbx-box --volume zbx-box:/www --restart no '
 
 while [[ $# > 0 ]];do case $1 in
+    #- <ref?> Generate locales. 
+    -L | --generate-mo)  (
+        [ -z "$(docker ps -f name=zbx-box-php -q)" ] && \
+            >&2 echo 'zbx-box-php service not found' && exit 3;
+
+        case $2 in
+        . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
+        '') REF=$(zbx-util-guess-ref);;
+        m*) REF=master;shift;;
+        * ) REF=$(zbx-util-validate-zref $2);shift;;
+        esac
+
+        [ -z $REF ] && exit 2;
+
+        docker exec -t zbx-box-php /www/$REF/frontends/php/locale/make_mo.sh
+        docker restart zbx-box-php
+
+        exit
+    );;
+    #- Edit .env file
+    -E | --edit-env) $EDITOR "$ZBX_BOX_ROOT/.env";exit;;
     #- gonna have to pull again
     -GU| --i-give-up) docker system prune --volumes --all --force;exit;;
     #- Ensure all services are up

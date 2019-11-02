@@ -34,5 +34,5 @@ Checkpoints:
 - [ ] easy tests runner (API, unit, integration and headless selenium)
 - [ ] ellastic search stack
 - [ ] php profiler XProf + https://github.com/badoo/liveprof-ui/
-- [ ] I18n
+- [x] i18n (all zabbix locales)
 - [ ] clean abandoned data (databases etc) for deleted <Refs> (or any)

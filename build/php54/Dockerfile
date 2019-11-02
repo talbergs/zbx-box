@@ -75,6 +75,10 @@ RUN pacman -S --noconfirm autoconf
 RUN pecl install xdebug-2.4.1
 RUN pecl install zendopcache-7.0.5
 
+COPY locale.gen /etc/locale.gen
+RUN locale-gen
+RUN pacman -S --noconfirm gettext
+
 EXPOSE 9000
 
 CMD ["/usr/local/bin/php-cgi", "-b", "0.0.0.0:9000"]
