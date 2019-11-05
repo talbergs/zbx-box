@@ -119,7 +119,7 @@ while [[ $# > 0 ]];do case $1 in
         [ -z $REF ] && exit 2;
 
         echo "zbx-box: Building schema"
-        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/zbx-builder-schema
+        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-schema
         echo "zbx-box: Done building schema"
 
         echo "zbx-box: Recreating database '$REF'"
@@ -148,7 +148,7 @@ while [[ $# > 0 ]];do case $1 in
             if [ "$YES" = y ];then docker rm -f zbx-box-server-$DREF;else exit;fi
         fi
 
-        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/zbx-builder-server
+        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-server
 
         [ ! -d "$CODEPATH/$REF/dist/etc/zabbix_server.conf.d/" ] && zbx+config "$REF"
 

@@ -38,6 +38,8 @@ export JIRAURL=$JIRAURL
 export BITBUCKET_PROJECT=$BITBUCKET_PROJECT
 export PHP_VERSION=$PHP_VERSION
 
+export PATH=$PATH:$ZBX_BOX_ROOT/bin/util
+
 export REFS=$(git ls-remote --refs --heads $GITREMOTE | sed 's|^.*heads/||g')
 export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^branch' | sed 's#^.*heads/##')
 
