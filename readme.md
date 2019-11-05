@@ -4,7 +4,7 @@ How-to:
 - git clone this
 - add `<this-repo>/bin` to your $PATH
 - `cp <this-repo>/example.env <this-repo>/.env`, then adjust environment variables
-- ensure services are up `zbx,ddev -U`
+- ensure services are up `zbx,zbox -U`
 - work on `zbx,dev <branch-basename>`
 
 Checkpoints:
