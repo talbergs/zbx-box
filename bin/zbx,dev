@@ -78,6 +78,8 @@ git branch --set-upstream-to "origin/$REF"
 while [[ $# > 0 ]];do case $1 in
     #- this will build fresh data.sql and recreate database (ref-named)
     -D  | --database) FLAG_DB=1 ;;
+    #- this will build fresh data.sql and recreate database (ref-named)
+    -Ds | --database-selenium) FLAG_DB=1 ;;
     #- build zabbix server and agent
     -S  | --srv) FLAG_SRV=1 ;;
 esac;shift;done

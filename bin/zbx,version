@@ -1,0 +1,29 @@
+#!/bin/bash
+source zbx-script-header
+## Fetches various versions.
+## Arg: <zref>
+case $1 in
+. ) REF=$(echo "$LOCALREFS" | fzf);shift;;
+m*) REF=master;shift;;
+'') REF=$(zbx-util-guess-ref);;
+-*) REF=$(zbx-util-guess-ref);;
+* ) REF=$(zbx-util-validate-zref $1);shift;;
+esac
+
+[ -z $REF ] && exit 4;
+DEFINES=$WORKTREE/$REF/frontends/php/include/defines.inc.php
+
+## By default gives full frontend version.
+[ $# -eq 0 ] && awk -F"'" '/ZABBIX_VERSION/{printf "%s", $4}' $DEFINES
+
+while [[ "$#" > 0 ]]; do case $1 in
+    #- fetches db version
+    -D|--db) awk -F'[^0-9]+' '/ZABBIX_DB_VERSION/{printf "%s", $2}' $DEFINES;;
+    #- fetches export version
+    -E|--export) awk -F"'" '/ZABBIX_EXPORT_VERSION/{printf "%s", $4}' $DEFINES;;
+    #- fetches api version
+    -A|--api) awk -F"'" '/ZABBIX_API_VERSION/{printf "%s", $4}' $DEFINES;;
+    #- fetches major frontend version (release up to 9th)
+    -M|--major) awk -F"'" '/ZABBIX_VERSION/{printf "%s",substr($4,0,3)}' $DEFINES;;
+    *) echo "Unknown parameter passed: $1"; exit 1;;
+esac; shift; done
