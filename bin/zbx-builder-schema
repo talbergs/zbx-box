@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-[ ! -e ./compile ] && ./bootstrap.sh
+./bootstrap.sh
 
 ./configure -q --with-postgresql
 

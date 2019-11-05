@@ -23,7 +23,7 @@ Checkpoints:
 - [ ] emails (mailhog-view)
 - [x] http/2
 - [ ] traefik (rewrite /frontends/php and more ..)
-- [x] xdebug (also used as profiler) + ui tool
+- [x] xdebug (also used as profiler) + ui tool (php 5.4 only)
 - [x] symfony vardumper (for terminal view also)
 - [ ] dev scripts
 - [ ] debug level logs for all containers
