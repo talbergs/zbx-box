@@ -54,7 +54,8 @@ while [[ $# > 0 ]];do case $1 in
             --env WEBGRIND_PROFILER_DIR=/data/profiles \
             wodby/webgrind:1.6-1.11.11
 
-        [ -z "$(docker ps -f name=zbx-box-php -q)" ] && docker run $COMMON_FLAGS \
+        [ -z "$(docker ps -f name=zbx-box-php -q)" ] && docker run  \
+            --restart always --detach --network zbx-box --volume zbx-box:/www \
             --name zbx-box-php \
             --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
             --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
