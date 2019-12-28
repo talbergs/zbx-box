@@ -1,27 +1,116 @@
 #!/bin/bash
-## Accepts a file name and outputs documentation.
-## If a line begins  with "##" (no leading spaces) these lines make up bolded summary.
-## If a line begins  with "#-" (leading spaces allowed) this line will serve as comment
-## for option that is declared in next line.
-## As an example:
-# during case statement...
-case /dev/null in
-#- This increases verbose level.
--V|--verbose) ;;
-#- Force colored output
--c|--ascii) ;;
-esac
+### Accepts a file name and extract documentation from comments.
+## Special shell comment strings will be grouped and formatted:
+##  "###" Bolded short summary section.
+##  "##"  Extended summary.
+##  "#-"  Used above case statement cases, to extract flags from next line.
+##        See an example:
+##        case /dev/null in
+##           #- This increases verbose level.
+##           -v|--verbose)
+##               # code ..
+##           ;;
+##           #- Force colored output.
+##           #- Multiline.
+##           -c|--ascii) ;;
+##        esac
 [[ -z $1 ]] && $0 "$0" && exit 9
+[[ ! -x $1 ]] && >&2 echo Shouldn\'t \"$1\" be executable? && exit 4
 
-tput bold
-grep '^##' $1 | sed 's/^##\s*//' 
-tput sgr 0
+awk -v prog="$(basename $1)" '
 
-grep '^\s*#-' -A 1 $1 \
-    | sed 's/^\s*#-//' \
-    | cut -d')' -f 1 \
-    | sed 's/^\s*//'\
-    | awk \
-        -v _grn="$(tput setaf 2)" \
-        -v _rst="$(tput sgr 0)" \
-        '{l=$0;getline;printf(" %-40s %s\n", _rst _grn $0, _rst l)}'
+BEGIN {
+    "tput sgr 0"   | getline color_seq["reset"]
+    "tput setaf 2" | getline color_seq["green"]
+    "tput bold"    | getline color_seq["bold"]
+
+    # TODO: wrap lines
+    # "tput cols"    | getline width
+    # TODO: replace <$0> with script name
+    # TODO: separate flags and parameters: "-v" "--lvl 4"
+}
+
+END {
+    for (n in header_lines_2)
+        printf(color("%s\n", "bold"), trim(header_lines_2[n]))
+
+    for (n in header_lines)
+        printf("%s %s\n", color("~", "bold"), header_lines[n])
+
+    width_opts = 0
+    for (n in a_width_opt) width_opts += a_width_opt[n]
+
+    for (i = 1; i <= num_opt; i++) {
+        opts_line = ""
+        for (j = 1; j <= length(a_width_opt); j++) {
+            opts_line = opts_line align(opt_col[i,j], a_width_opt[j] + 1)
+        }
+        printf(" %s %s\n", color(align(opts_line, width_opts), "green"), opt_desc[i])
+    }
+}
+
+/^\s*###/ {
+    num_header_2 ++
+    header_lines_2[num_header_2] = to_header_line($line)
+}
+
+/^\s*##[^#]/ {
+    num_header ++
+    header_lines[num_header] = to_header_line($line)
+}
+
+/^\s*#-/ {
+    num_opt ++
+    opt_desc[num_opt] = to_opts_desc_line($line)
+}
+
+function to_opts_desc_line(str) {
+    sub("^\\s*#-", "", str)
+    str = trim(str)
+
+    getline opts_line
+
+    if (match(opts_line, /^\s*#-/)) {
+        return str " " to_opts_desc_line(opts_line)
+    }
+
+    to_opts_column(opts_line)
+
+    return str
+}
+
+function to_opts_column(str) {
+    sub("\\).*$", "", str)
+    split(str, a_opts, "|")
+    for (n in a_opts) {
+        opt = trim(a_opts[n])
+        opt_col[num_opt, n] = opt
+
+        opt_len = length(opt)
+        if (a_width_opt[n] < opt_len) a_width_opt[n] = opt_len
+    }
+}
+
+function to_header_line(str) {
+    sub("^\\s*#+", "", str)
+    return str
+}
+
+#
+# STRING FUNCTIONS
+#
+
+function color(str, color_k) {
+    return sprintf("%s", color_seq[color_k] str color_seq["reset"])
+}
+
+function align(str, num) {
+    return sprintf("%-" num "s", str)
+}
+
+function trim(str) {
+    sub("^\\s*", "", str)
+    sub("\\s*$", "", str)
+    return str
+}
+' "$1"
