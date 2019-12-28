@@ -84,8 +84,8 @@ while [[ $# > 0 ]];do case $1 in
     -S  | --srv) FLAG_SRV=1 ;;
 esac;shift;done
 
-[ $FLAG_DB ] && zbx,zbox -C "$REF"
-[ $FLAG_SRV ] && zbx,zbox -S "$REF"
+[ $FLAG_DB ] && zbx,box -C "$REF"
+[ $FLAG_SRV ] && zbx,box -S "$REF"
 [ $FLAG_CONF ] && zbx+config "$REF"
 [ $FLAG_WEB ] && zbx,web "$REF"
 
