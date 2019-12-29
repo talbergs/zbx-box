@@ -25,9 +25,8 @@ Checkpoints:
 - [ ] traefik (rewrite /frontends/php and more ..)
 - [x] xdebug (also used as profiler) + ui tool (php 5.4 only)
 - [x] symfony vardumper (for terminal view also)
-- [ ] dev scripts
+- [x] dev scripts
 - [ ] debug level logs for all containers
-- [ ] mirrored queries (work while using mariadb) same queries executed on postgresql
 - [x] opcache + opcache-gui
 - [x] git worktree workflow
 - [ ] cloud setup (server proxy agent etc)

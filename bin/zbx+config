@@ -22,6 +22,28 @@ unset bak
 frontend=$WORKTREE/$REF/frontends/php/conf/zabbix.conf.php
 DREF=$(echo $REF | tr / _)
 
+vimrc=$WORKTREE/$REF/.vimrc
+cat > $vimrc <<- EOM
+" zabbix project specific editor configuration
+fun s:on_file(fname)
+    if exists('b:zfnamed')|return|el|let b:zfnamed=1|en
+    setl noexpandtab
+    setl tabstop=4
+
+    let l:ext = fnamemodify(a:fname, ':e')
+    if l:ext == 'php'
+        nn <buffer><silent> gf :call fzf#vim#files('.', {'options':'-q '.substitute(expand('<cfile>'),'/','','').' --prompt ">: "'})<cr>
+    elsei l:ext == 'tmpl'
+        setf sql
+    en
+endf
+
+au BufNewFile,BufRead * call s:on_file(expand('<amatch>'))
+EOM
+
+echo "vimrc >> $vimrc"
+echo
+
 cat > $frontend <<- EOM
 <?php
 global \$DB, \$HISTORY;
@@ -69,7 +91,7 @@ echo
     LogFile=/www/$REF/dist/zabbix_agentd.log
     EnableRemoteCommands=1
     LogRemoteCommands=1
-    Server=zbx-box-server-$DREF
+    Server=zbx-box-server-$DREF,127.0.0.1,0.0.0.0
 EOM
 
 echo "conf-gen >> $agent"
