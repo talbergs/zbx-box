@@ -51,6 +51,7 @@ while [[ $# > 0 ]];do case $1 in
 
         [ -z "$(docker ps -f name=zbx-box-mailhog -q)" ] && docker run $COMMON_FLAGS \
             --name zbx-box-mailhog \
+            --network-alias mail.example.com \
             -p 8025:8025 \
             mailhog/mailhog
 
