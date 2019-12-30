@@ -49,6 +49,11 @@ while [[ $# > 0 ]];do case $1 in
             --opt o=bind \
             --name zbx-box
 
+        [ -z "$(docker ps -f name=zbx-box-mailhog -q)" ] && docker run $COMMON_FLAGS \
+            --name zbx-box-mailhog \
+            -p 8025:8025 \
+            mailhog/mailhog
+
         [ -z "$(docker ps -f name=zbx-box-webgrind -q)" ] && docker run $COMMON_FLAGS \
             --name zbx-box-webgrind \
             --volume zbx-box-data:/data \

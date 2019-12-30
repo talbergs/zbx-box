@@ -20,7 +20,7 @@ Checkpoints:
 - [x] php 5.4
 - [x] php 7.4
 - [ ] jira API integration (issue description)
-- [ ] emails (mailhog-view)
+- [x] emails (mailhog-view)
 - [x] http/2
 - [ ] traefik (rewrite /frontends/php and more ..)
 - [x] xdebug (also used as profiler) + ui tool (php 5.4 only)
