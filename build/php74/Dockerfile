@@ -25,10 +25,10 @@ RUN ./configure \
 RUN make && make install
 
 WORKDIR /tmp
-RUN curl https://downloads.php.net/~derick/php-7.4.0RC5.tar.gz -o php74rc5
-RUN tar -xf php74rc5
+RUN curl https://www.php.net/distributions/php-7.4.1.tar.gz -o php74
+RUN tar -xf php74
 
-WORKDIR /tmp/php-7.4.0RC5
+WORKDIR /tmp/php-7.4.1
 RUN ./configure \
     --with-pgsql \
     --enable-bcmath \
