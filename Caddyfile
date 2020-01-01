@@ -5,4 +5,21 @@
     # or brotli ?
     fastcgi / zbx-box-php:9000 php
     browse
+
+    log stdout
+
+    rewrite {
+        r ^\/master\/(.*)?$
+        to /master/frontends/php{1}
+    }
+
+    rewrite {
+        r ^\/(\d[^\/]*)\/(.*)?$
+        to /release/{1}/frontends/php/{2}
+    }
+
+    rewrite {
+        r ^\/([D|Z][^\/]*)([\/].*)?$
+        to /feature/{1}/frontends/php{2}
+    }
 }

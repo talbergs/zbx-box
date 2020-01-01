@@ -16,4 +16,4 @@ esac
 [ -z $REF ] && exit 1
 [ -z "$(pgrep $BROWSER)" ] && echo no existing $BROWSER session && exit 2
 
-$BROWSER "${WEBTLD%/}/$REF/frontends/php" &> /dev/null
+$BROWSER "${WEBTLD%/}/$(basename $REF)/" &> /dev/null
