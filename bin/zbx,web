@@ -14,6 +14,5 @@ m*) REF=master;shift;;
 esac
 
 [ -z $REF ] && exit 1
-[ -z "$(pgrep $BROWSER)" ] && echo no existing $BROWSER session && exit 2
 
 $BROWSER "${WEBTLD%/}/$(basename $REF)/" &> /dev/null
