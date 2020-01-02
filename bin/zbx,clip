@@ -34,7 +34,7 @@ CLIPS+=("<[~$JIRAUSER]> RESOLVED in $SHALINK")
 CLIPS+=("<[~$JIRAUSER]> IMPLEMENTED in $SHALINK")
 CLIPS+=("IMPLEMENTED in development branch $REFLINK")
 CLIPS+=("FIXED in development branch $REFLINK")
-CLIPS+=("- *$(zbx,version)* $SHA")
+CLIPS+=("- *$(zbx,version)* $SHALINK")
 
 CLIPS+=("git push --delete origin $REF")
 CLIPS+=("git cherry-pick -m 1 -x $SHA")
