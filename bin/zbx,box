@@ -147,6 +147,7 @@ while [[ $# > 0 ]];do case $1 in
         case $2 in
         . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
         '') REF=$(zbx-util-guess-ref);;
+        m*) REF=master;shift;;
         * ) REF=$(zbx-util-validate-zref $2);shift;;
         esac
 
