@@ -85,7 +85,7 @@ while [[ $# > 0 ]];do case $1 in
             -p 80:80 \
             -p 443:443 \
             --volume "$ZBX_BOX_ROOT"/.persist/.caddy:/etc/caddycerts \
-            --volume "$ZBX_BOX_ROOT"/Caddyfile:/etc/Caddyfile \
+            --volume "$ZBX_BOX_ROOT"/cfg/http/Caddyfile:/etc/Caddyfile \
             abiosoft/caddy:0.11.0
 
         # Can be used to orchistrate containers or serve dashboard information with some action buttons
