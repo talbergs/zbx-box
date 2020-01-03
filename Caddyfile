@@ -10,7 +10,7 @@
 
     rewrite {
         r ^\/master\/(.*)?$
-        to /master/frontends/php{1}
+        to /master/frontends/php/{1}
     }
 
     rewrite {
