@@ -1,10 +1,9 @@
 #!/bin/bash
 source zbx-script-header
 
+### Main dev entry.
+### Usage: $0 <ZREF?> [--SWITCH..]
 # Docs {{{1
-## Main dev entry.
-## Usage:
-## > zbx,box <zref?> [--SWITCH..]
 ##
 ## <zref>: Possible values.
 ## |  lowercase "m"  - master

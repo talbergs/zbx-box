@@ -1,7 +1,6 @@
 #!/bin/bash
 source zbx-script-header
-## Usage:
-## >$ zbx+config <zref?> [FLAGS..]
+### Usage: $0 <zref?> [FLAGS..]
 ## If <zref> was not given a guess will be made based on PWD. If not possible - exit code 2
 ## If <zref> was given and not found or invalid - exit code 3
 ## 

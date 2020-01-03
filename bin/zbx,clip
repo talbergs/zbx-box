@@ -1,5 +1,6 @@
 #!/bin/bash
 source zbx-script-header
+### Usage: $0 <zref?> [FLAGS..]
 ## Clips common stuff.
 case $1 in
 . ) REF=$(echo "$LOCALREFS" | fzf);shift;;

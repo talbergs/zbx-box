@@ -1,4 +1,6 @@
 #!/bin/bash
+### Usage: $0 [FILE..]
+### Usage: echo [FILE..] | $0
 source zbx-script-header
 ## Builds commit flags string based on file list.
 ## Accepts standard input.or array of args.

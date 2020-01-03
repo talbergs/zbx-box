@@ -1,5 +1,6 @@
 #!/bin/bash
 source zbx-script-header
+### Usage: $0 <zref?> [FLAGS..]
 ## Shorthand to open browser.
 ## Usage:
 ## >$ zbx,web

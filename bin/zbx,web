@@ -1,10 +1,11 @@
 #!/bin/bash
+### Usage: $0 <zref?> [FLAGS..]
 source zbx-script-header
 ## Shorthand to open browser.
 ## Usage:
-## >$ zbx,web # to guess
-## >$ zbx,web . # to open fzf menu
-## >$ zbx,web <zref> # to create link
+## >$ $0 # to guess
+## >$ $0 . # to open fzf menu
+## >$ $0 <zref> # to create link
 
 case $1 in
 . ) REF=$(echo "$LOCALREFS" | fzf);shift;;

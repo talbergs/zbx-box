@@ -1,4 +1,5 @@
 #!/bin/bash
+### Usage: $0 FILE
 ### Accepts a file name and extract documentation from comments.
 ## Special shell comment strings will be grouped and formatted:
 ##  "###" Bolded short summary section.
@@ -17,7 +18,7 @@
 [[ -z $1 ]] && $0 "$0" && exit 9
 [[ ! -x $1 ]] && >&2 echo Shouldn\'t \"$1\" be executable? && exit 4
 
-awk -v prog="$(basename $1)" '
+awk -v PROG="$(basename $1)" '
 
 BEGIN {
     "tput sgr 0"   | getline color_seq["reset"]
@@ -26,7 +27,6 @@ BEGIN {
 
     # TODO: wrap lines
     # "tput cols"    | getline width
-    # TODO: replace <$0> with script name
     # TODO: separate flags and parameters: "-v" "--lvl 4"
 }
 
@@ -93,6 +93,7 @@ function to_opts_column(str) {
 
 function to_header_line(str) {
     sub("^\\s*#+", "", str)
+    gsub("\\$0", PROG, str)
     return str
 }
 

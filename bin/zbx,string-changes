@@ -1,6 +1,7 @@
 #!/bin/bash
 source zbx-script-header
 [[ $# -ne 2 ]] && $0 -h && exit 1
+### Usage: $0 <zref?> [FLAGS..]
 ## Check translation strings.
 ## Script must be run from within git repo.
 ##
