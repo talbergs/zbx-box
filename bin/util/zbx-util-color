@@ -1,0 +1,54 @@
+#!/bin/bash
+source zbx-script-header
+### Usage: program | $0 "header string"
+### Usage: $0 "header string" ["lines" ..] [FLAGS..]
+##
+## Outputs program STDOUT to file in tmp and shows preview only.
+
+# TODO: trim lines longer than term width
+# TODO: flags
+# TODO: tmp file if short view is used
+# TODO: capture and color print all stderr
+#while [[ $# > 0 ]];do case $1 in
+#    #- set preview size to 4, else unlimited and no tmp file is whitten
+#    -P  | --preview-size) HEIGHT=4 ;;
+#esac;shift;done
+
+col() {
+    tput setaf $1
+    echo "$2"
+    tput sgr 0
+}
+
+indent() {
+    printf "\t$(col 8 %s)" "${1}"
+}
+
+col 5 "${1:-no header}"
+
+height=${HEIGHT:-4}
+i=1
+if [ -p /dev/stdin ]; then
+    while read line; do
+        [ ! -z $HEIGHT ] && tput el
+        indent "${line}"
+        if [ ! -z $HEIGHT ]; then
+            continue
+        fi
+
+        ((i++))
+
+        if [[ "$i" -gt "$height" ]]; then
+            while [ $i -ne 1 ]; do
+                tput cuu1
+                ((i--))
+            done
+        fi
+    done
+    tput ed
+else
+    [ -z "$1" ] && exit 2
+    for line in "$@"; do
+        indent "${line}"
+    done
+fi

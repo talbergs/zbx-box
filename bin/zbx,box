@@ -159,7 +159,8 @@ while [[ $# > 0 ]];do case $1 in
             if [ "$YES" = y ];then docker rm -f zbx-box-server-$DREF;else exit;fi
         fi
 
-        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-server
+        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-server \
+            | zbx-util-color "$(basename $0): zbx-builder-server"
 
         [ ! -d "$CODEPATH/$REF/dist/etc/zabbix_server.conf.d/" ] && zbx+config "$REF"
 
