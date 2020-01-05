@@ -1,23 +1,63 @@
-:80, :443 {
+localhost:80, localhost:443 {
+    fastcgi / zbx-box-php:9000 php
+
     root /www
     tls self_signed
-    gzip
-    # or brotli ?
-    fastcgi / zbx-box-php:9000 php
+    gzip # or brotli ?
     browse
-
     log stdout
-
     rewrite {
         r ^\/master\/(.*)?$
         to /master/frontends/php/{1}
     }
-
     rewrite {
         r ^\/(\d[^\/]*)\/(.*)?$
         to /release/{1}/frontends/php/{2}
     }
+    rewrite {
+        r ^\/([D|Z][^\/]*)([\/].*)?$
+        to /feature/{1}/frontends/php{2}
+    }
+}
 
+legacy.localhost:80, legacy.localhost:443 {
+    fastcgi / zbx-box-php-legacy:9000 php
+
+    root /www
+    tls self_signed
+    gzip # or brotli ?
+    browse
+    log stdout
+    rewrite {
+        r ^\/master\/(.*)?$
+        to /master/frontends/php/{1}
+    }
+    rewrite {
+        r ^\/(\d[^\/]*)\/(.*)?$
+        to /release/{1}/frontends/php/{2}
+    }
+    rewrite {
+        r ^\/([D|Z][^\/]*)([\/].*)?$
+        to /feature/{1}/frontends/php{2}
+    }
+}
+
+edge.localhost:80, edge.localhost:443 {
+    fastcgi / zbx-box-php-edge:9000 php
+
+    root /www
+    tls self_signed
+    gzip # or brotli ?
+    browse
+    log stdout
+    rewrite {
+        r ^\/master\/(.*)?$
+        to /master/frontends/php/{1}
+    }
+    rewrite {
+        r ^\/(\d[^\/]*)\/(.*)?$
+        to /release/{1}/frontends/php/{2}
+    }
     rewrite {
         r ^\/([D|Z][^\/]*)([\/].*)?$
         to /feature/{1}/frontends/php{2}

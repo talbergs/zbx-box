@@ -21,8 +21,11 @@ while [[ $# > 0 ]];do case $1 in
 
         [ -z $REF ] && exit 2;
 
-        docker exec -t zbx-box-php /www/$REF/frontends/php/locale/make_mo.sh
-        docker restart zbx-box-php
+        docker exec -t zbx-box-php /www/$REF/frontends/php/locale/make_mo.sh \
+            | zbx-util-color -H "docker exec -t zbx-box-php /www/$REF/frontends/php/locale/make_mo.sh"
+
+        docker restart zbx-box-php \
+            | zbx-util-color -H "docker restart zbx-box-php"
 
         exit
     );;
@@ -32,36 +35,57 @@ while [[ $# > 0 ]];do case $1 in
     -GU| --i-give-up) docker system prune --volumes --all --force;exit;;
     #- Ensure all services are up
     -U | --up ) (
-        # TODO: print service names when --up
-
-        [ -z "$(docker network ls -f name='^zbx-box$' -q)" ] && docker network create zbx-box
+        [ -z "$(docker network ls -f name='^zbx-box$' -q)" ] && docker network create zbx-box \
+            | zbx-util-color -H "docker network create zbx-box"
 
         [ -z "$(docker volume ls -f name='^zbx-box-data$' -q)" ] && docker volume create \
             --driver local \
             --opt type=none \
             --opt device=$ZBX_BOX_ROOT/data \
             --opt o=bind \
-            --name zbx-box-data
+            --name zbx-box-data \
+            | zbx-util-color -H "docker volume create zbx-box-data (device=$ZBX_BOX_ROOT/data)"
 
         [ -z "$(docker volume ls -f name='^zbx-box$' -q)" ] && docker volume create \
             --driver local \
             --opt type=none \
             --opt device=$WORKTREE \
             --opt o=bind \
-            --name zbx-box
+            --name zbx-box \
+            | zbx-util-color -H "docker volume create zbx-box-data (device=$WORKTREE)"
 
         [ -z "$(docker ps -f name=zbx-box-mailhog -q)" ] && docker run $COMMON_FLAGS \
             --name zbx-box-mailhog \
             --network-alias mail.example.com \
             -p 8025:8025 \
-            mailhog/mailhog
+            mailhog/mailhog \
+            | zbx-util-color -H "docker run (mailhog/mailhog)"
 
         [ -z "$(docker ps -f name=zbx-box-webgrind -q)" ] && docker run $COMMON_FLAGS \
             --name zbx-box-webgrind \
             --volume zbx-box-data:/data \
             -p 8080:8080 \
             --env WEBGRIND_PROFILER_DIR=/data/profiles \
-            wodby/webgrind:1.6-1.11.11
+            wodby/webgrind:1.6-1.11.11 \
+            | zbx-util-color -H "docker run (wodby/webgrind:1.6-1.11.11)"
+
+        [ -z "$(docker ps -f name=zbx-box-php-legacy -q)" ] && docker run  \
+            --restart always --detach --network zbx-box --volume zbx-box:/www \
+            --name zbx-box-php-legacy \
+            --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
+            --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
+            --volume zbx-box-data:/data \
+            talbergs/zbx-box-php${PHP_VERSION_LEGACY} \
+            | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION_LEGACY}) use via 'legacy.localhost/'"
+
+        [ -z "$(docker ps -f name=zbx-box-php-edge -q)" ] && docker run  \
+            --restart always --detach --network zbx-box --volume zbx-box:/www \
+            --name zbx-box-php-edge \
+            --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
+            --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
+            --volume zbx-box-data:/data \
+            talbergs/zbx-box-php${PHP_VERSION_EDGE} \
+            | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION_EDGE}) use via 'edge.localhost/'"
 
         [ -z "$(docker ps -f name=zbx-box-php -q)" ] && docker run  \
             --restart always --detach --network zbx-box --volume zbx-box:/www \
@@ -69,12 +93,14 @@ while [[ $# > 0 ]];do case $1 in
             --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
             --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
             --volume zbx-box-data:/data \
-            talbergs/zbx-box-php${PHP_VERSION}
+            talbergs/zbx-box-php${PHP_VERSION} \
+            | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION}) use via 'localhost/'"
 
         [ -z "$(docker ps -f name=zbx-box-db -q)" ] && docker run $COMMON_FLAGS \
             --name zbx-box-db \
             --volume "$ZBX_BOX_ROOT"/.persist/postgres:/var/lib/postgresql/data \
-            postgres
+            postgres \
+            | zbx-util-color -H "docker run (postgres)"
 
         # The self_signed is broken in caddy since 0.11.1 (in v2.0 (at 2020) it will work again)
         # TIP:
@@ -86,7 +112,8 @@ while [[ $# > 0 ]];do case $1 in
             -p 443:443 \
             --volume "$ZBX_BOX_ROOT"/.persist/.caddy:/etc/caddycerts \
             --volume "$ZBX_BOX_ROOT"/cfg/http/Caddyfile:/etc/Caddyfile \
-            abiosoft/caddy:0.11.0
+            abiosoft/caddy:0.11.0 \
+            | zbx-util-color -H "docker run (abiosoft/caddy:0.11.0)"
 
         # Can be used to orchistrate containers or serve dashboard information with some action buttons
         [ -z "$(docker ps -f name=zbx-box-builder -q)" ] && docker run $COMMON_FLAGS \
@@ -97,7 +124,8 @@ while [[ $# > 0 ]];do case $1 in
             --cpus 8 \
             --memory-swappiness 0 \
             --user $(id -u ${USER}):$(id -g ${USER}) \
-            talbergs/zbx-box-builder
+            talbergs/zbx-box-builder \
+            | zbx-util-color -H "docker run (talbergs/zbx-box-builder)"
 
     );exit;;
 
@@ -128,17 +156,22 @@ while [[ $# > 0 ]];do case $1 in
 
         [ -z $REF ] && exit 2;
 
-        echo "zbx-box: Building schema"
-        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-schema
-        echo "zbx-box: Done building schema"
+        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-schema \
+        | zbx-util-color -H "Building schema in ${WORKTREE}/${REF}"
 
-        echo "zbx-box: Recreating database '$REF'"
-        docker exec -t zbx-box-db psql -q -U postgres -c "DROP DATABASE IF EXISTS \"$REF\""
-        docker exec -t zbx-box-db psql -q -U postgres -c "CREATE DATABASE \"$REF\""
-        docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/schema.sql
-        docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/images.sql
-        docker exec -t zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/data.sql
-        echo "zbx-box: Done recreating database '$REF'"
+    
+        docker exec zbx-box-db psql -q -U postgres -c "DROP DATABASE IF EXISTS \"$REF\"" \
+        | zbx-util-color -H "DROP DATABASE IF EXISTS \"$REF\"" 
+
+        docker exec zbx-box-db psql -q -U postgres -c "CREATE DATABASE \"$REF\"" \
+        | zbx-util-color -H "CREATE DATABASE \"$REF\""
+        docker exec zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/schema.sql \
+        | zbx-util-color -H "postgresql/schema.sql > \"$REF\""
+        docker exec zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/images.sql \
+        | zbx-util-color -H "postgresql/images.sql > \"$REF\""
+        docker exec zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/data.sql \
+        | zbx-util-color -H "postgresql/data.sql > \"$REF\""
+        
     );exit;;
     #- <ref?> Creates and starts server 
     -S | --create-server ) (
@@ -160,16 +193,20 @@ while [[ $# > 0 ]];do case $1 in
         fi
 
         docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-server \
-            | zbx-util-color "$(basename $0): zbx-builder-server"
+            | zbx-util-color -H "$(basename $0): zbx-builder-server" -P 10
 
-        [ ! -d "$CODEPATH/$REF/dist/etc/zabbix_server.conf.d/" ] && zbx+config "$REF"
+        [ ! -d "$CODEPATH/$REF/dist/etc/zabbix_server.conf.d/" ] && zbx+config "$REF" \
+            | zbx-util-color -H "$(basename $0): zbx+config $REF" -P 10
 
         docker run $COMMON_FLAGS -t \
             --name zbx-box-server-$DREF \
             talbergs/zbx-box-server
 
-        docker exec zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_server
-        docker exec zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_agentd
+        docker exec zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_server \
+            | zbx-util-color -H "$(basename $0): zabbix_server" -P 10
+
+        docker exec zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_agentd \
+            | zbx-util-color -H "$(basename $0): zabbix_agentd" -P 10
 
     );exit;;
     #- The symphony t helpers --follow command
