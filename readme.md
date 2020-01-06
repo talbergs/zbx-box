@@ -3,7 +3,7 @@
 How-to:
 - git clone this
 - add `<this-repo>/bin` to your $PATH
-- `cp <this-repo>/example.env <this-repo>/.env`, then adjust environment variables
+- `cp <this-repo>/env.example <this-repo>/.env`, then adjust environment variables
 - ensure services are up `zbx,box -U`
 - work on `zbx,dev <branch-basename>`
 
