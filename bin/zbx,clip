@@ -33,6 +33,7 @@ VERSION="$(zbx,version)"
 CLIPS+=("<[~$JIRAUSER]> CLOSED with minor fix in $SHALINK")
 CLIPS+=("<[~$JIRAUSER]> RESOLVED in $SHALINK")
 CLIPS+=("<[~$JIRAUSER]> IMPLEMENTED in $SHALINK")
+CLIPS+=("$SHALINK")
 CLIPS+=("IMPLEMENTED in development branch $REFLINK")
 CLIPS+=("FIXED in development branch $REFLINK")
 CLIPS+=("- *$(zbx,version)* $SHALINK")
