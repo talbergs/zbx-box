@@ -18,16 +18,16 @@ use Symfony\Component\VarDumper\Dumper\CliDumper;
  * dump default - auto determined if cli or web view
  * then die
  */
-function dd($var) {
-	dump($var);
+function dd() {
+    call_user_func_array('dump', func_get_args());
     die;
 }
 
 /**
  * dump default - auto determined if cli or web view
  */
-function d($var) {
-	dump($var);
+function d() {
+    call_user_func_array('dump', func_get_args());
 }
 
 /**
@@ -35,26 +35,38 @@ function d($var) {
  *
  * nc -lkU ./debug.sock
  */
-function t($var) {
+function t() {
     static $sock;
+    static $dumper;
+    static $cloner;
 
-    $cloner = new VarCloner();
-    $dumper = new CliDumper();
-
-    $dumper->setColors(true);
     if (!$sock) {
         $path = 'unix:///'.__DIR__.'/../www/debug.sock';
         $sock = stream_socket_client($path, $errno, $errstr);
-        fwrite($sock, chr(10).'$_REQUEST '.date('Y-m-d H:i:s').PHP_EOL);
-        $dumper->dump($cloner->cloneVar($_REQUEST), $sock);
-        fwrite($sock, '--/req--'.PHP_EOL);
     }
 
+    if (!$dumper) {
+        $dumper = new CliDumper();
+    }
+
+    if (!$cloner) {
+        $cloner = new VarCloner();
+    }
 
     extract(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]);
     $file = substr($file, strpos($file, '/php/') + 5);
     fwrite($sock, sprintf("\033[4m\033[31m\033[1m> %s:%d \033[0m\n", $file, $line));
-    $dumper->dump($cloner->cloneVar($var), $sock);
 
-    /* fclose($sock); */
+    $args = func_get_args();
+    if (!$args) {
+        $dumper->setColors(false);
+        fwrite($sock, chr(10).'$_REQUEST '.date('Y-m-d H:i:s').PHP_EOL);
+        $dumper->dump($cloner->cloneVar($_REQUEST), $sock);
+        fwrite($sock, '--/req--'.PHP_EOL);
+    } else {
+        $dumper->setColors(true);
+        foreach($args as $var) {
+            $dumper->dump($cloner->cloneVar($var), $sock);
+        }
+    }
 }
