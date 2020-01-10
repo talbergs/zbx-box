@@ -69,7 +69,7 @@ while [[ $# > 0 ]];do case $1 in
             wodby/webgrind:1.6-1.11.11 \
             | zbx-util-color -H "docker run (wodby/webgrind:1.6-1.11.11)"
 
-        [ -z "$(docker ps -f name=zbx-box-php-legacy -q)" ] && docker run  \
+        [ -z "$(docker ps -f name='^zbx-box-php-legacy$' -q)" ] && docker run  \
             --restart always --detach --network zbx-box --volume zbx-box:/www \
             --name zbx-box-php-legacy \
             --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
@@ -78,7 +78,7 @@ while [[ $# > 0 ]];do case $1 in
             talbergs/zbx-box-php${PHP_VERSION_LEGACY} \
             | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION_LEGACY}) use via 'legacy.localhost/'"
 
-        [ -z "$(docker ps -f name=zbx-box-php-edge -q)" ] && docker run  \
+        [ -z "$(docker ps -f name='^zbx-box-php-edge$' -q)" ] && docker run  \
             --restart always --detach --network zbx-box --volume zbx-box:/www \
             --name zbx-box-php-edge \
             --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
@@ -87,7 +87,7 @@ while [[ $# > 0 ]];do case $1 in
             talbergs/zbx-box-php${PHP_VERSION_EDGE} \
             | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION_EDGE}) use via 'edge.localhost/'"
 
-        [ -z "$(docker ps -f name=zbx-box-php -q)" ] && docker run  \
+        [ -z "$(docker ps -f name='^zbx-box-php$' -q)" ] && docker run  \
             --restart always --detach --network zbx-box --volume zbx-box:/www \
             --name zbx-box-php \
             --volume "$ZBX_BOX_ROOT"/decoration:/decoration \

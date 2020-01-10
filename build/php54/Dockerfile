@@ -47,28 +47,6 @@ RUN ./configure \
 
 RUN make
 
-# RUN make test # {{{
-#
-# =====================================================================
-# FAILED TEST SUMMARY
-# ---------------------------------------------------------------------
-# Test 5: HTML Test [ext/dom/tests/dom005.phpt]
-# Bug #70019 Files extracted from archive may be placed outside of destination directory [ext/phar/tests/bug70019.phpt]
-# SimpleXML: XPath [ext/simplexml/tests/008.phpt]
-# http-stream test [ext/standard/tests/network/http-stream.phpt]
-# substr_compare() [ext/standard/tests/strings/substr_compare.phpt]
-# Test strptime() function : basic functionality [ext/standard/tests/time/strptime_basic.phpt]
-# Bug #64230 (XMLReader does not suppress errors) [ext/xmlreader/tests/bug64230.phpt]
-# =====================================================================
-# 
-# =====================================================================
-# WARNED TEST SUMMARY
-# ---------------------------------------------------------------------
-# Phar: bug #69958: Segfault in Phar::convertToData on invalid file [ext/phar/tests/bug69958.phpt] (warn: XFAIL section but test passes)
-# Bug #70172 - Use After Free Vulnerability in unserialize() [ext/standard/tests/serialize/bug70172.phpt] (warn: XFAIL section but test passes)
-# =====================================================================
-# }}}
-
 RUN make install
 
 RUN pacman -S --noconfirm autoconf

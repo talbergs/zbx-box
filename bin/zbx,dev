@@ -38,6 +38,14 @@ if [ -z $ALLOW_CREATE ] && [ -z $REMOTE_EXISTS ];then
     exit 3
 fi
 
+if [ ! -z $Z_JUMP_FILE ];then
+    if [ -f $Z_JUMP_FILE ];then
+        echo "$CODEPATH/frontends/php|1|$(date +%s)" >> $Z_JUMP_FILE
+    else
+        >&2 echo $Z_JUMP_FILE not found
+    fi
+fi
+
 # Git {{{1
 cd "$WORKTREE/master" && git fetch
 
