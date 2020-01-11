@@ -96,6 +96,8 @@ esac;shift;done
 [ $FLAG_CONF ] && zbx+config "$REF"
 [ $FLAG_WEB ] && zbx,web "$REF"
 
+zbx,api-seeds
+
 [ ! -z "$NOTIF" ] && notify-send "$NOTIF"
 
 # vim: fdm=marker
