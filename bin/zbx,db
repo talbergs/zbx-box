@@ -1,0 +1,16 @@
+#!/bin/bash
+### Usage: $0 <zref?> [FLAGS..]
+source zbx-script-header
+
+## Currently used db cli
+case $1 in
+. ) REF=$(echo "$LOCALREFS" | fzf);shift;;
+m*) REF=master;shift;;
+'') REF=$(zbx-util-guess-ref);;
+-*) REF=$(zbx-util-guess-ref);;
+* ) REF=$(zbx-util-validate-zref $1);shift;;
+esac
+
+[ -z $REF ] && exit 4;
+
+docker exec -it zbx-box-db psql --dbname "$REF" -U postgres
