@@ -13,4 +13,13 @@ esac
 
 [ -z $REF ] && exit 4;
 
-docker exec -it zbx-box-db psql --dbname "$REF" -U postgres
+while [[ $# > 0 ]];do case $1 in
+    #- Use modern db cli with completion
+    -M | --modern ) MODERN=1 ;;
+esac;shift;done
+
+if [ ! -z $MODERN ];then
+    docker run -it --name zbx-box-db-pgcli --rm --network zbx-box --link zbx-box-db:postgres kubetools/pgcli postgresql://postgres:example@zbx-box-db:5432/$REF
+else
+    docker exec -it zbx-box-db psql --dbname "$REF" -U postgres
+fi
