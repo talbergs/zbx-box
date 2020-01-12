@@ -6,7 +6,7 @@ source zbx-script-header
 ## >$ zbx,web
 
 case $1 in
-. ) REF=$(echo "$REFS" | fzf);shift;;
+. ) REF=$(echo "$(ls-remote)" | fzf);shift;;
 '') REF=$(zbx-util-guess-ref);;
 * ) REF=$(zbx-util-validate-zref $1);shift;;
 esac

@@ -20,7 +20,7 @@ source zbx-script-header
 # Ref {{{1
 case $1 in
 '') zbx-script-info && exit;;
-. ) REF=$(echo "$REFS" | fzf);shift;;
+. ) REF=$(echo "$(ls-remote)" | fzf);shift;;
 m*) REF=master;shift;;
 -*) REF=$(zbx-util-guess-ref);;
 * ) REF=$(zbx-util-validate-zref $1);shift;;
@@ -31,7 +31,7 @@ esac
 NOTIF=
 CODEPATH="$WORKTREE/$REF"
 ALLOW_CREATE=${REF##release*}
-REMOTE_EXISTS=$(echo "$REFS" | ag "^$REF$" | cat)
+REMOTE_EXISTS=$(echo "$(ls-remote)" | ag "^$REF$" | cat)
 
 if [ -z $ALLOW_CREATE ] && [ -z $REMOTE_EXISTS ];then
     >&2 echo ref: $REF not found in remote. Exiting.
@@ -51,7 +51,7 @@ cd "$WORKTREE/master" && git fetch
 
 if [ $ALLOW_CREATE ] && [ -z $REMOTE_EXISTS ];then
     BASEREF="origin/$(\
-        echo "$REFS" | fzf \
+        echo "$(ls-remote)" | fzf \
             --header "About to create '$REF'!" \
             --prompt "Choose which REF will '$REF' be based on: > " \
             --query "release"

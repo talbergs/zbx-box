@@ -40,7 +40,14 @@ export PHP_VERSION=$PHP_VERSION
 
 export PATH=$PATH:$ZBX_BOX_ROOT/bin/util
 
-export REFS=$(git ls-remote --refs --heads $GITREMOTE | sed 's|^.*heads/||g')
+REFS=
+ls-remote() {
+    if [ -z $REFS ]; then
+        REFS=$(git ls-remote --refs --heads $GITREMOTE | sed 's|^.*heads/||g')
+    fi
+    echo "$REFS"
+}
+
 export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^branch' | sed 's#^.*heads/##')
 
 # echo -n $(cat $WORKTREE/master/frontends/php/include/defines.inc.php \
