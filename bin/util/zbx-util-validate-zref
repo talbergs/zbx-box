@@ -7,9 +7,12 @@ validate_zref() {
     local feature="^(DEV|ZBX|ZBXNEXT)-[0-9]+-[0-9]+.[0-9]+"
     local feature_ready="^feature/(DEV|ZBX|ZBXNEXT)-[0-9]+-[0-9]+.[0-9]+"
     local release="^[0-9]+\.[0-9]+$"
+    local release_ready="^release/[0-9]+\.[0-9]+$"
     if   [[ "$1" =~ $release ]]; then echo "release/$1"
     elif [[ "$1" =~ $feature ]]; then echo "feature/$1"
     elif [[ "$1" =~ $feature_ready ]]; then echo "$1"
+    elif [[ "$1" =~ $release_ready ]]; then echo "$1"
+    elif [[ "$1" =~ ^master$ ]]; then echo "$1"
     else                         >&2 printf "REF should be '%s' or '%s'.\nGot '$1'\n" $feature $release
     fi
 }
