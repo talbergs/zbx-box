@@ -1,0 +1,26 @@
+#!/bin/bash
+source zbx-script-header
+### $0 <zref?> <default args>
+##
+## Example: $0 <server args>
+
+bak=$1;case $1 in
+.      ) REF=$(echo "$LOCALREFS" | fzf);shift;;
+'' | -*) REF=$(zbx-util-guess-ref);        [ -z "$REF" ] && exit 2        ;;
+m*     ) REF=master;shift;;
+*      ) REF=$(zbx-util-validate-zref $1); [ -z "$REF" ] && exit 3 ; shift;;
+esac
+
+SERVER_BIN=$WORKTREE/$REF/dist/sbin/zabbix_server
+
+[ ! -x $SERVER_BIN ] \
+    && >&2 printf "Not found $SERVER_BIN" \
+    && exit 3
+
+
+DREF=$(echo $REF | tr / _)
+if [ -z "$(docker ps -f name=zbx-box-server-$DREF -q)" ];then
+    >&2 printf "No docker service \"zbx-box-server-$DREF\" found\n";exit 4
+fi
+
+docker exec -it zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_server "$@"
