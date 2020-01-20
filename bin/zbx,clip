@@ -26,7 +26,7 @@ cd $WORKTREE/$REF
 SHA="$(git rev-parse HEAD | head -c 9)"
 
 SHALINK="[$SHA|$BITBUCKET_PROJECT/commits/$SHA]"
-REFLINKQ="targetBranch=refs/tags/$(zbx,version)&sourceBranch=refs/heads/$REF"
+REFLINKQ="targetBranch=refs/heads/release/$(zbx,version --major)&sourceBranch=refs/heads/$REF"
 REFLINK="[$REF|$BITBUCKET_PROJECT/compare/diff?$REFLINKQ]"
 VERSION="$(zbx,version)"
 
