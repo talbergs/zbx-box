@@ -25,8 +25,17 @@ cd $WORKTREE/$REF
 # we use first 9 digits of sha
 SHA="$(git rev-parse HEAD | head -c 9)"
 
+MASTER_VERSION="$(cd $WORKTREE/master && zbx,version --major)"
+CURRENT_VERSION="$(zbx,version --major)"
+
+if [ "$CURRENT_VERSION" = "$MASTER_VERSION" ]; then
+    TARGET_BRANCH=master
+else
+    TARGET_BRANCH=release/$CURRENT_VERSION
+fi
+
 SHALINK="[$SHA|$BITBUCKET_PROJECT/commits/$SHA]"
-REFLINKQ="targetBranch=refs/heads/release/$(zbx,version --major)&sourceBranch=refs/heads/$REF"
+REFLINKQ="targetBranch=refs/heads/$TARGET_BRANCH&sourceBranch=refs/heads/$REF"
 REFLINK="[$REF|$BITBUCKET_PROJECT/compare/diff?$REFLINKQ]"
 VERSION="$(zbx,version)"
 
