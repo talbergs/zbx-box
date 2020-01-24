@@ -16,6 +16,7 @@ fzclip() {
 }
 
 CLIPS=("<[~$JIRAUSER]> CLOSED")
+CLIPS+=("<[~$JIRAUSER]> WON'T FIX")
 CLIPS+=("*(1)* No translation string changes.")
 
 [ -z $REF ] && fzclip CLIPS && exit;
