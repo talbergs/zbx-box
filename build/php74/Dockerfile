@@ -1,6 +1,8 @@
 FROM archlinux/base
-WORKDIR /tmp
+
 RUN pacman -Syu --noconfirm
+
+WORKDIR /tmp
 
 RUN pacman -S --noconfirm \
     grep \
@@ -13,7 +15,8 @@ RUN pacman -S --noconfirm \
     libjpeg-turbo \
     pkgconf \
     oniguruma \
-    tar
+    tar \
+    autoconf
 
 ADD freetype-2.10.1.tar.xz .
 WORKDIR /tmp/freetype-2.10.1
@@ -25,20 +28,22 @@ RUN ./configure \
 RUN make && make install
 
 WORKDIR /tmp
-RUN curl https://www.php.net/distributions/php-7.4.1.tar.gz -o php74
-RUN tar -xf php74
+RUN curl https://www.php.net/distributions/php-7.4.2.tar.gz -L -o php
+RUN echo "e1b8dbf561ac1d871362054ff4cd62dca5e19c8c896567996525dda7c4b320f9 php" | sha256sum -c
+RUN tar -xf php
 
-WORKDIR /tmp/php-7.4.1
+WORKDIR /tmp/php-7.4.2
 RUN ./configure \
     --with-pgsql \
     --enable-bcmath \
     --enable-mbstring \
     --enable-sockets \
-    --enable-gd \
+    --with-gd \
     --with-gettext \
     --with-ldap \
-    --with-jpeg \
-    --with-freetype \
+    --with-jpeg-dir \
+    --enable-gd-native-ttf \
+    --with-freetype-dir \
     --with-config-file-scan-dir=/etc/php.d \
     --prefix=/usr/local
 
@@ -47,6 +52,14 @@ RUN make && make install
 COPY locale.gen /etc/locale.gen
 RUN locale-gen
 RUN pacman -S --noconfirm gettext
+
+WORKDIR /tmp
+RUN curl https://github.com/xdebug/xdebug/archive/2.9.1.tar.gz -L -o xdebug
+RUN echo "06a83c4612e7a1c220beded16b9f390f8813e1bcc0dcc96c3c801187fcdb6772 xdebug" | sha256sum -c
+RUN tar -xf xdebug
+
+WORKDIR /tmp/xdebug-2.9.1
+RUN ./rebuild.sh
 
 EXPOSE 9000
 
