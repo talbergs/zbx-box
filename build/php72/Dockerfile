@@ -42,7 +42,6 @@ RUN ./configure \
     --with-gettext \
     --with-ldap \
     --with-jpeg-dir \
-    --enable-gd-native-ttf \
     --with-freetype-dir \
     --with-config-file-scan-dir=/etc/php.d \
     --prefix=/usr/local
