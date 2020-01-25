@@ -38,12 +38,11 @@ RUN ./configure \
     --enable-bcmath \
     --enable-mbstring \
     --enable-sockets \
-    --with-gd \
+    --enable-gd \
     --with-gettext \
     --with-ldap \
-    --with-jpeg-dir \
-    --enable-gd-native-ttf \
-    --with-freetype-dir \
+    --with-freetype \
+    --with-jpeg \
     --with-config-file-scan-dir=/etc/php.d \
     --prefix=/usr/local
 
