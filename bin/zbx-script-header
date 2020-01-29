@@ -7,7 +7,7 @@ set -e
 
 if [[ -z $ZBX_ENV_SOURCED ]];then
 
-    DEPS=('fzf ag git docker')
+    DEPS=('fzf ag git docker fold')
     DEP_MSF='Missing host dependency: "%s". Install that and come back.'
     for d in $DEPS;do
         [ "$(which $d 2> /dev/null)" ] || (printf "\n\t$DEP_MSF\n\n" $d && exit 13)

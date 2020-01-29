@@ -14,7 +14,11 @@
 ##           #- Force colored output.
 ##           #- Multiline.
 ##           -c|--ascii) ;;
+##           #- Notate when parameter is expected
+##           #- by using "<PARAM>" notation in this comment.
+##           -f|--file) FILE=$1 ;;
 ##        esac
+## Also, terminal width is taken into acount to do wrapping.
 [[ -z $1 ]] && $0 "$0" && exit 9
 [[ ! -x $1 ]] && >&2 echo Shouldn\'t \"$1\" be executable? && exit 4
 
@@ -23,10 +27,10 @@ awk -v PROG="$(basename $1)" '
 BEGIN {
     "tput sgr 0"   | getline color_seq["reset"]
     "tput setaf 2" | getline color_seq["green"]
+    "tput setaf 3" | getline color_seq["gold"]
     "tput bold"    | getline color_seq["bold"]
 
-    # TODO: wrap lines
-    # "tput cols"    | getline width
+    "tput cols"    | getline width
     # TODO: separate flags and parameters: "-v" "--lvl 4"
 }
 
@@ -40,23 +44,26 @@ END {
     width_opts = 0
     for (n in a_width_opt) width_opts += a_width_opt[n]
 
+    opt_desc_pad=align("", width_opts + 4)
+
     for (i = 1; i <= num_opt; i++) {
         opts_line = ""
         for (j = 1; j <= length(a_width_opt); j++) {
             opts_line = opts_line align(opt_col[i,j], a_width_opt[j] + 1)
         }
-        printf(" %s %s\n", color(align(opts_line, width_opts), "green"), opt_desc[i])
+        printf(" %s %s\n", color(align(opts_line, width_opts), "green"),
+            color(wrap(opt_desc[i], width - width_opts - 4, opt_desc_pad), "gold"))
     }
 }
 
 /^\s*###/ {
     num_header_2 ++
-    header_lines_2[num_header_2] = to_header_line($line)
+    header_lines_2[num_header_2] = wrap(to_header_line($line), width - 1, " ")
 }
 
 /^\s*##[^#]/ {
     num_header ++
-    header_lines[num_header] = to_header_line($line)
+    header_lines[num_header] = wrap(to_header_line($line), width - 3, "~~ ")
 }
 
 /^\s*#-/ {
@@ -101,17 +108,63 @@ function to_header_line(str) {
 # STRING FUNCTIONS
 #
 
+# Wraps string into terminal sequences. Rememer to measure string lenth before this.
+#
+# @param str      String to color.
+# @param color_k  Sequence map key: one of "reset", "green", "bold" (can be combined)
+#
+# @return         terminal color sequence followed by strin, treminated by reset color sequence
+#
 function color(str, color_k) {
     return sprintf("%s", color_seq[color_k] str color_seq["reset"])
 }
 
+# Adds right space padding to string.
+#
+# @param str   string to pad
+# @param num   num of spaces
+#
+# @return str  Space pre-padded string.
+#
 function align(str, num) {
     return sprintf("%-" num "s", str)
 }
 
+# Trims both sides of string.
+#
+# @param str   string to trim
+#
+# @return str  trimmed string
+#
 function trim(str) {
     sub("^\\s*", "", str)
     sub("\\s*$", "", str)
     return str
+}
+
+# String will be broken in words so the produced line would not exceed $wrap_len.
+# In case of multiple resulting lines, these lines can be padded by $pad_str.
+#
+# @param str       string to wrap
+# @param wrap_len  max len of line
+# @param pad_str   (optional) only wrapped lines to pad by str
+#
+# @return strw     the multiline
+#
+function wrap(str, wrap_len, pad_str) {
+    strw=""
+    cmd=sprintf("echo -n \"%s\" | fold -w %s -s", str, wrap_len)
+    first=0
+    while (cmd | getline strwl) {
+        if (first == 0) {
+            strw = strwl
+            first=1
+        } else {
+            strw = strw "\n" pad_str strwl
+        }
+    }
+    close(cmd)
+
+    return strw
 }
 ' "$1"
