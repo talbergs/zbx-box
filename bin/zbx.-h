@@ -14,8 +14,9 @@
 ##           #- Force colored output.
 ##           #- Multiline.
 ##           -c|--ascii) ;;
-##           #- Notate when parameter is expected
-##           #- by using "<PARAM>" notation in this comment.
+##           #- <PARAM> notation in this comment
+##           #- will otate when parameter is expected
+##           #- It must be the first thing on first line.
 ##           -f|--file) FILE=$1 ;;
 ##        esac
 ## Also, terminal width is taken into acount to do wrapping.
@@ -31,7 +32,6 @@ BEGIN {
     "tput bold"    | getline color_seq["bold"]
 
     "tput cols"    | getline width
-    # TODO: separate flags and parameters: "-v" "--lvl 4"
 }
 
 END {
@@ -44,15 +44,23 @@ END {
     width_opts = 0
     for (n in a_width_opt) width_opts += a_width_opt[n]
 
-    opt_desc_pad=align("", width_opts + 4)
+    width_arg = 0
+    for (n in opt_desc_arg) {
+        arg_len = length(opt_desc_arg[n])
+        if (width_arg < arg_len) width_arg = arg_len
+    }
+
+    opt_desc_pad = align("", width_opts + width_arg + 4)
 
     for (i = 1; i <= num_opt; i++) {
         opts_line = ""
         for (j = 1; j <= length(a_width_opt); j++) {
             opts_line = opts_line align(opt_col[i,j], a_width_opt[j] + 1)
         }
-        printf(" %s %s\n", color(align(opts_line, width_opts), "green"),
-            color(wrap(opt_desc[i], width - width_opts - 4, opt_desc_pad), "gold"))
+        printf(" %s %s%s\n",
+            color(align(opts_line, width_opts), "green"),
+            color(align(opt_desc_arg[i], width_arg), "gold"),
+            wrap(opt_desc[i], width - (width_opts + width_arg) - 4, opt_desc_pad))
     }
 }
 
@@ -68,7 +76,17 @@ END {
 
 /^\s*#-/ {
     num_opt ++
-    opt_desc[num_opt] = to_opts_desc_line($line)
+
+    arg_at = index($line, "<")
+    arg_to = index($line, ">")
+    if (arg_at != 0 && arg_to != 0) {
+        opt_desc_arg[num_opt] = substr($line, arg_at + 1, arg_to - arg_at - 1) " "
+        opt_desc[num_opt] = trim(substr(to_opts_desc_line($line), ((arg_to - arg_at) + 2)))
+    }
+    else {
+        opt_desc[num_opt] = to_opts_desc_line($line)
+    }
+
 }
 
 function to_opts_desc_line(str) {
