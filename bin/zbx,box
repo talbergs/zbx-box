@@ -97,6 +97,7 @@ while [[ $# > 0 ]];do case $1 in
             | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION}) use via 'localhost/'"
 
         [ -z "$(docker ps -f name=zbx-box-db -q)" ] && docker run $COMMON_FLAGS \
+            --shm-size=1g \
             --name zbx-box-db \
             -p 5432:5432 \
             --volume "$ZBX_BOX_ROOT"/.persist/postgres:/var/lib/postgresql/data \
