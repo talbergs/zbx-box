@@ -38,7 +38,7 @@ fun s:on_file(fname)
 endf
 
 au BufNewFile,BufRead * call s:on_file(expand('<amatch>'))
-au BufWritePost screen.scss execute('sil !make css 2>&1 | xargs -L1 -d "\n" notify-send')
+au BufWritePost screen.scss execute('sil !zbx+assets 2>&1 | xargs -L1 -d "\n" notify-send')
 EOM
 
 echo "vimrc >> $vimrc"
