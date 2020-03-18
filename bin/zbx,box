@@ -132,10 +132,12 @@ while [[ $# > 0 ]];do case $1 in
  
         [ -z "$(docker ps -f name=zbx-box-pgadmin -q)" ] && docker run $COMMON_FLAGS \
             --name zbx-box-pgadmin \
+            --volume zbx-box-data:/pgadmin \
             -p 8001:80 \
             -e 'PGADMIN_DEFAULT_EMAIL=admin@zabbix.com' \
             -e 'PGADMIN_DEFAULT_PASSWORD=example' \
-            dpage/pgadmin4
+            dpage/pgadmin4 \
+            | zbx-util-color -H "docker run (dpage/pgadmin4:4.19)"
 
         # [ -z "$(docker ps -f name=zbx-box-ldap -q)" ] && docker run $COMMON_FLAGS \
         #     --name zbx-box-ldap \
