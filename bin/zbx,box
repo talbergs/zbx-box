@@ -1,236 +1,116 @@
 #!/bin/bash
+### Usage: $0 [FLAG?] [SERVICE?..]
+## Mini orchestrator for a service.
+## If no flag is given - "--compose" flag is implied.
+## Example:
+##         $0
+##         # A menu will list all available services, the chosen ones will be rised.
+## Example:
+##         $0 caddy postgres
+##         # This will rise explicitly services.
+## Example:
+##         $0 --rm oracle
+##         # This will remove explicitly listed services.
+## Example:
+##         $0 --rm
+##         # A menu will list all available services, the chosen ones will be removed.
 source zbx-script-header
-### Usage: $0 <zref?> [FLAGS..]
-### Interface for zbx-box.
-## Wraps various docker related commands.
 
-COMMON_FLAGS='--rm --detach --network zbx-box --volume zbx-box:/www --restart no '
+if [[ "$2" =~ ^-.* ]]; then
+    >&2 echo "At most one switch is allowed!"
+    exit 2
+fi
 
-while [[ $# > 0 ]];do case $1 in
-    #- <ref?> Generate locales. 
-    -L | --generate-mo)  (
-        [ -z "$(docker ps -f name=zbx-box-php -q)" ] && \
-            >&2 echo 'zbx-box-php service not found' && exit 3;
+remove-image() {
+    docker rmi $(zbx-image-id $1) \
+        | zbx-util-color -H "Removing image for '$1'"
+}
 
-        case $2 in
-        . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
-        '') REF=$(zbx-util-guess-ref);;
-        m*) REF=master;shift;;
-        * ) REF=$(zbx-util-validate-zref $2);shift;;
-        esac
+compose-service() {
+    # TODO: This deletes all stopped containers.
+    docker container prune --filter="label=zbx-box" --force
 
-        [ -z $REF ] && exit 2;
+    name=$1
+    case $name in
+        php54-fpm | php72-fpm | php74-fpm)
+            zbx-compose $name \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name/zabbix.php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
+                --volume "$ZBX_BOX_ROOT"/decoration:/decoration
+        ;;
+        oracle)
+            zbx-compose $name \
+                --volume $ZBX_BOX_ROOT/.persist/$name:/opt/oracle/oradata \
+                --cpus 8 \
+                --memory-swappiness 0 \
+                --shm-size=2g \
+                -p 1521:1521 \
+                -p 5500:5500 \
+                -p 8001:8080 \
+                --rm
+        ;;
+        postgres)
+            # TODO: make system volumes instead of implicit bind
+            # TODO: maybe service may have manifest file stating what volumes if any it has to see size
+            zbx-compose $name \
+                --volume "$ZBX_BOX_ROOT"/.persist/postgres:/var/lib/postgresql/data
+        ;;
+        caddy)
+            zbx-compose $name \
+                --publish 80:80 \
+                --publish 443:443 \
+                --publish 2019:2019 \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name/config.json:/config.json \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name/Caddyfile:/Caddyfile
+        ;;
+        * )
+            >&2 echo "Unknown service '$name'";
+        ;;
+    esac
+}
 
-        docker exec -t zbx-box-php /www/$REF/frontends/php/locale/make_mo.sh \
-            | zbx-util-color -H "docker exec -t zbx-box-php /www/$REF/frontends/php/locale/make_mo.sh"
+actions=(compose-service)
+action_name="Spin up service"
+if [[ "$1" =~ ^-.* ]]; then
+    case $1 in
+        #- Lift up the service (will build image if neeed).
+        -C | --compose )
+            action_name="Spin up service"
+            actions=(compose-service) ;;
+        #- Remove image (all layers) for this this service.
+        -R | --rmi )
+            action_name="Remove image"
+            actions=(remove-image) ;;
+        #- Stop and remove container.
+        -S | --stop )
+            action_name="Stop and remove container"
+            actions=(zbx-decompose) ;;
+        #- Rebuild image for this service (using cache).
+        -B | --build )
+            action_name="Build image"
+            actions=(zbx-image-build) ;;
+        #- For testing -- teardown service -> build semage -> spin up
+        -Q | --devel ) actions=(zbx-decompose zbx-image-build compose-service) ;;
+        *) >&2 echo "Unknown parameter passed: $1"; exit 1;;
+    esac
+    shift
+fi
 
-        docker restart zbx-box-php \
-            | zbx-util-color -H "docker restart zbx-box-php"
+if [[ $# > 0 ]];then
+    services="${@}"
+else
+    services=$(ls $ZBX_BOX_ROOT/build | fzf \
+        --multi \
+        --header "Action to apply: '$action_name'" \
+        --prompt "$action_name >")
+fi
+for service in ${services[*]};do
+    for action in ${actions[*]}; do
+        $action $service
+    done
+done
 
-        exit
-    );;
-    #- Edit .env file
-    -E | --edit-env) $EDITOR "$ZBX_BOX_ROOT/.env";exit;;
-    #- gonna have to pull again
-    -GU| --i-give-up) docker system prune --volumes --all --force;exit;;
-    #- Ensure all services are up
-    -U | --up ) (
-        [ -z "$(docker network ls -f name='^zbx-box$' -q)" ] && docker network create zbx-box \
-            | zbx-util-color -H "docker network create zbx-box"
-
-        [ -z "$(docker volume ls -f name='^zbx-box-data$' -q)" ] && docker volume create \
-            --driver local \
-            --opt type=none \
-            --opt device=$ZBX_BOX_ROOT/data \
-            --opt o=bind \
-            --name zbx-box-data \
-            | zbx-util-color -H "docker volume create zbx-box-data (device=$ZBX_BOX_ROOT/data)"
-
-        [ -z "$(docker volume ls -f name='^zbx-box$' -q)" ] && docker volume create \
-            --driver local \
-            --opt type=none \
-            --opt device=$WORKTREE \
-            --opt o=bind \
-            --name zbx-box \
-            | zbx-util-color -H "docker volume create zbx-box-data (device=$WORKTREE)"
-
-        # [ -z "$(docker ps -f name=zbx-box-mailhog -q)" ] && docker run $COMMON_FLAGS \
-        #     --name zbx-box-mailhog \
-        #     --network-alias mail.example.com \
-        #     -p 8025:8025 \
-        #     mailhog/mailhog \
-        #     | zbx-util-color -H "docker run (mailhog/mailhog)"
-
-        # [ -z "$(docker ps -f name=zbx-box-webgrind -q)" ] && docker run $COMMON_FLAGS \
-        #     --name zbx-box-webgrind \
-        #     --volume zbx-box-data:/data \
-        #     -p 8080:8080 \
-        #     --env WEBGRIND_PROFILER_DIR=/data/profiles \
-        #     wodby/webgrind:1.6-1.11.11 \
-        #     | zbx-util-color -H "docker run (wodby/webgrind:1.6-1.11.11)"
-
-        [ -z "$(docker ps -f name='^zbx-box-php-legacy$' -q)" ] && docker run  \
-            --restart always --detach --network zbx-box --volume zbx-box:/www \
-            --name zbx-box-php-legacy \
-            --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
-            --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
-            --volume zbx-box-data:/data \
-            talbergs/zbx-box-php${PHP_VERSION_LEGACY} \
-            | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION_LEGACY}) use via 'legacy.localhost/'"
-
-        [ -z "$(docker ps -f name='^zbx-box-php-edge$' -q)" ] && docker run  \
-            --restart always --detach --network zbx-box --volume zbx-box:/www \
-            --name zbx-box-php-edge \
-            --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
-            --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
-            --volume zbx-box-data:/data \
-            talbergs/zbx-box-php${PHP_VERSION_EDGE} \
-            | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION_EDGE}) use via 'edge.localhost/'"
-
-        [ -z "$(docker ps -f name='^zbx-box-php$' -q)" ] && docker run  \
-            --restart always --detach --network zbx-box --volume zbx-box:/www \
-            --name zbx-box-php \
-            --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
-            --volume "$ZBX_BOX_ROOT"/cfg/php:/etc/php.d \
-            --volume zbx-box-data:/data \
-            talbergs/zbx-box-php${PHP_VERSION} \
-            | zbx-util-color -H "docker run (talbergs/zbx-box-php${PHP_VERSION}) use via 'localhost/'"
-
-        [ -z "$(docker ps -f name=zbx-box-db -q)" ] && docker run $COMMON_FLAGS \
-            --shm-size=1g \
-            --name zbx-box-db \
-            -p 5432:5432 \
-            --volume "$ZBX_BOX_ROOT"/.persist/postgres:/var/lib/postgresql/data \
-            -e POSTGRES_PASSWORD=example \
-            postgres \
-            | zbx-util-color -H "docker run (postgres)"
-
-        # The self_signed is broken in caddy since 0.11.1 (in v2.0 (at 2020) it will work again)
-        # TIP:
-        #  chrome://flags/#allow-insecure-localhost
-        #  chrome://flags/#unsafely-treat-insecure-origin-as-secure
-        [ -z "$(docker ps -f name=zbx-box-http -q)" ] && docker run $COMMON_FLAGS \
-            --name zbx-box-http \
-            -p 80:80 \
-            -p 443:443 \
-            --volume "$ZBX_BOX_ROOT"/.persist/.caddy:/etc/caddycerts \
-            --volume "$ZBX_BOX_ROOT"/cfg/http/Caddyfile:/etc/Caddyfile \
-            abiosoft/caddy:0.11.0 \
-            | zbx-util-color -H "docker run (abiosoft/caddy:0.11.0)"
-
-        # Can be used to orchistrate containers or serve dashboard information with some action buttons
-        [ -z "$(docker ps -f name=zbx-box-builder -q)" ] && docker run $COMMON_FLAGS \
-            -td \
-            --volume $ZBX_BOX_ROOT:/usr/local \
-            --name zbx-box-builder \
-            --volume /var/run/docker.sock:/var/run/docker.sock \
-            --cpus 8 \
-            --memory-swappiness 0 \
-            --user $(id -u ${USER}):$(id -g ${USER}) \
-            talbergs/zbx-box-builder \
-            | zbx-util-color -H "docker run (talbergs/zbx-box-builder)"
- 
-        [ -z "$(docker ps -f name=zbx-box-pgadmin -q)" ] && docker run $COMMON_FLAGS \
-            --name zbx-box-pgadmin \
-            --volume zbx-box-data:/pgadmin \
-            -p 8001:80 \
-            -e 'PGADMIN_DEFAULT_EMAIL=admin@zabbix.com' \
-            -e 'PGADMIN_DEFAULT_PASSWORD=example' \
-            dpage/pgadmin4 \
-            | zbx-util-color -H "docker run (dpage/pgadmin4:4.19)"
-
-        # [ -z "$(docker ps -f name=zbx-box-ldap -q)" ] && docker run $COMMON_FLAGS \
-        #     --name zbx-box-ldap \
-        #     --volume "$ZBX_BOX_ROOT"/.persist/ldap:/var/lib/ldap \
-        #     --volume "$ZBX_BOX_ROOT"/.persist/ldap-conf:/etc/ldap/slapd.d  \
-        #     --env LDAP_ORGANISATION="My Company" \
-        #     --env LDAP_DOMAIN="my-company.com" \
-        #     --env LDAP_ADMIN_PASSWORD="zabbix111" \
-        #     osixia/openldap:1.3.0 \
-        #     | zbx-util-color -H "docker run (ldap)"
-
-    );exit;;
-
-    #- Take all services down
-    -D | --down ) (
-        [ ! -z "$(docker ps -f name=zbx-box-php -q)" ] && docker stop zbx-box-php
-        [ ! -z "$(docker ps -f name=zbx-box-http -q)" ] && docker stop zbx-box-http
-        [ ! -z "$(docker ps -f name=zbx-box-db -q)" ] && docker stop zbx-box-db
-        [ ! -z "$(docker ps -f name=zbx-box-builder -q)" ] && docker stop zbx-box-builder
-    );exit;;
-    #- Take out just all , except for images
-    -Dd | --dead-down ) (
-        docker rm -f $(docker ps -f name='^zbx-box' -q)
-        docker network rm $(docker network ls -f name='^zbx-box' -q)
-        docker volume rm $(docker volume ls -f name='^zbx-box' -q)
-    );exit;;
-    #- <ref?> Creates and seeds schema 
-    -C | --create-schema ) (
-        [ -z "$(docker ps -f name='^zbx-box-builder$' -q)" ] && echo 'Service "zbx-box-builder" is not running.' && exit 2;
-        [ -z "$(docker ps -f name='^zbx-box-db$' -q)" ] && echo 'Service "zbx-box-db" is not running.' && exit 3;
-
-        case $2 in
-        . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
-        '') REF=$(zbx-util-guess-ref);;
-        m*) REF=master;shift;;
-        * ) REF=$(zbx-util-validate-zref $2);shift;;
-        esac
-
-        [ -z $REF ] && exit 2;
-
-        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-schema \
-        | zbx-util-color -H "Building schema in ${WORKTREE}/${REF}"
-
-    
-        docker exec zbx-box-db psql -q -U postgres -c "DROP DATABASE IF EXISTS \"$REF\"" \
-        | zbx-util-color -H "DROP DATABASE IF EXISTS \"$REF\"" 
-
-        docker exec zbx-box-db psql -q -U postgres -c "CREATE DATABASE \"$REF\"" \
-        | zbx-util-color -H "CREATE DATABASE \"$REF\""
-        docker exec zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/schema.sql \
-        | zbx-util-color -H "postgresql/schema.sql > \"$REF\""
-        docker exec zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/images.sql \
-        | zbx-util-color -H "postgresql/images.sql > \"$REF\""
-        docker exec zbx-box-db psql -q -U postgres -d "$REF" --file /www/$REF/database/postgresql/data.sql \
-        | zbx-util-color -H "postgresql/data.sql > \"$REF\""
-        
-    );exit;;
-    #- <ref?> Creates and starts server 
-    -S | --create-server ) (
-        [ -z "$(docker ps -f name=zbx-box-builder -q)" ] && echo 'Service "zbx-box-builder" is not running.' && exit 2;
-
-        case $2 in
-        . ) REF=$(echo "$LOCALREFS" | fzf);shift;;
-        '') REF=$(zbx-util-guess-ref);;
-        m*) REF=master;shift;;
-        * ) REF=$(zbx-util-validate-zref $2);shift;;
-        esac
-
-        [ -z $REF ] && exit 2;
-
-        DREF=$(echo $REF | tr / _)
-        if [ ! -z "$(docker ps -f name=zbx-box-server-$DREF -q)" ];then
-            read -p "zbx-box-server-$DREF exists. Recreate? (yN) > " YES
-            if [ "$YES" = y ];then docker rm -f zbx-box-server-$DREF;else exit;fi
-        fi
-
-        docker exec --workdir /www/$REF zbx-box-builder /usr/local/bin/util/zbx-builder-server \
-            | zbx-util-color -H "$(basename $0): zbx-builder-server" -P 10
-
-        [ ! -d "$CODEPATH/$REF/dist/etc/zabbix_server.conf.d/" ] && zbx+config "$REF" \
-            | zbx-util-color -H "$(basename $0): zbx+config $REF" -P 10
-
-        docker run $COMMON_FLAGS -t \
-            --name zbx-box-server-$DREF \
-            talbergs/zbx-box-server
-
-        docker exec zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_server \
-            | zbx-util-color -H "$(basename $0): zabbix_server" -P 10
-
-        docker exec zbx-box-server-$DREF /www/$REF/dist/sbin/zabbix_agentd \
-            | zbx-util-color -H "$(basename $0): zabbix_agentd" -P 10
-
-    );exit;;
-    #- The symphony t helpers --follow command
-    -T | --t-follow ) docker exec -it zbx-box-builder nc -lkU /www/debug.sock;exit 0;;
-esac;shift;done
+# TODO: show [x] or [ ] within list, then parse it out
+# TODO: show preview less (if no flags given only then)
+# TODO: bind keys to do action and put in fzf multiline header
+# --preview 'zbx-compose-status {}' \
+# --preview-window=up \

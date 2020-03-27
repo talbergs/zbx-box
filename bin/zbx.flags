@@ -1,10 +1,25 @@
 #!/bin/bash
-### Usage: $0 [FILE..]
-### Usage: echo [FILE..] | $0
-source zbx-script-header
+### Usage #1: $0 [FILE..]
+### Usage #2: echo [FILE..] | $0
 ## Builds commit flags string based on file list.
-## Accepts standard input.or array of args.
+## Accepts list of filenames.
+## Ussually used in commit hook to create correct commit message header.
+## Example:
+##         git diff HEAD^..HEAD --stat | $0
+##         # Outputs something like "..F......."
+## Example:
+##         $0 <(git diff HEAD^..HEAD --stat)
+##         # Outputs something like "..F......."
+## Example:
+##         git diff $(git merge-base master HEAD)..HEAD --stat | $0
+##         # Get all the flags touched in this feature.
+## Example:
+##         $0 --
+##         # Just outputs empty flags ".........."
+##~
 # if [[ $1 = -x ]];then set -x;trap read debug;shift;fi
+
+source zbx-script-header
 
 TAGS=..........
 
@@ -23,6 +38,7 @@ Proxy(){            TAGS=${TAGS:0:7}P${TAGS:8:10};}
 Server(){           TAGS=${TAGS:0:8}S${TAGS:9:10};}
 Templates(){        TAGS=${TAGS:0:9}T;}
 
+# TODO not all paths are matched, contribution needed.
 function testLine() {
     # [ ! -f "$1" ] && exit 1
     case "$1" in
@@ -34,7 +50,6 @@ function testLine() {
         *ChangeLog.d/*) Documentation ;;
         *create/src/*) Templates ;;
         *templates/*) Templates ;;
-        # TODO all
     esac
 }
 

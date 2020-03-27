@@ -1,0 +1,11 @@
+#!/bin/bash
+
+## <name>
+name=$1
+
+top_layers="$(zbx-image-id $name)"
+if [ ! -z $top_layers ];then
+	docker rmi --no-prune $top_layers
+fi
+
+docker build --label zbx-box=$name $ZBX_BOX_ROOT/build/$name

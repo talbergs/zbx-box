@@ -1,0 +1,27 @@
+#!/bin/bash
+### Usage: $0 <zref?>
+## Generates few things.
+## TODO: for now only changelog entry file.
+## TODO: check-strings comment
+source zbx-script-header
+source zbx-get-ref
+
+ticket-name() {
+    basename $(git rev-parse --show-toplevel) | cut -d- -f1-2
+}
+
+upstream() {
+    major=$(zbx,version --major)
+    if [ "5.0" == $major ];then
+        echo -n master
+    else
+        echo -n release/$major
+    fi
+}
+
+ch_dir=$(git rev-parse --show-toplevel)/ChangeLog.d
+file=$ch_dir/$(ls $ch_dir | fzf)/$(ticket-name)
+echo -n "$(zbx.flags $(git diff --name-only $(git merge-base $(upstream) HEAD) HEAD)) [$(ticket-name)] ()" > $file
+
+echo $file
+cat $file

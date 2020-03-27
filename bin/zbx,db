@@ -1,25 +1,98 @@
 #!/bin/bash
 ### Usage: $0 <zref?> [FLAGS..]
+## Feeds inital sql's into database (by default named same as \$REF). They do need to be build first.
+## For this do execute this:
+##         zbx,make --database
+## If no shema.sql is found you will be prompted to agree to do this for you.
+## Example:
+##         $0 -P -S
+##         # This will determine ref based on \$PWD, then build postgresql database
+##         # then add selenium data.sql topping.
+## Example:
+##         $0 -P -S -N "v2"
+##         # This will determine ref based on \$PWD, then build postgresql database
+##         # then add selenium data.sql topping and ensure database name has affix "v2"
+## Example:
+##         $0 4.0 -P -S -N "v2"
+##         # Same as above, except "release/4.0" is used as \$REF
+## Example:
+##         $0 4.0 -P -M -S
+##         # Note: all swithces are applied in order they are passed to command.
+##         # First is created postgres db, then mariadb, both got selenium topping.
+##~
+
 source zbx-script-header
+source zbx-get-ref
 
-## Currently used db cli
-case $1 in
-. ) REF=$(echo "$LOCALREFS" | fzf);shift;;
-m*) REF=master;shift;;
-'') REF=$(zbx-util-guess-ref);;
--*) REF=$(zbx-util-guess-ref);;
-* ) REF=$(zbx-util-validate-zref $1);shift;;
-esac
+postgres() {
+    zbx-util-color -H "DROP DATABASE IF EXISTS \"$DBNAME\""
+    docker exec zbx-box-postgres psql -q -U postgres -c "DROP DATABASE IF EXISTS \"$DBNAME\""
+    zbx-util-color -H "CREATE DATABASE \"$DBNAME\""
+    docker exec zbx-box-postgres psql -q -U postgres -c "CREATE DATABASE \"$DBNAME\""
+    zbx-util-color -H "postgresql/schema.sql"
+    docker exec zbx-box-postgres psql -q -U postgres -d "$DBNAME" --file /var/www/html/$REF/database/postgresql/schema.sql
+    zbx-util-color -H "postgresql/images.sql"
+    docker exec zbx-box-postgres psql -q -U postgres -d "$DBNAME" --file /var/www/html/$REF/database/postgresql/images.sql
+    zbx-util-color -H "postgresql/data.sql"
+    docker exec zbx-box-postgres psql -q -U postgres -d "$DBNAME" --file /var/www/html/$REF/database/postgresql/data.sql
 
-[ -z $REF ] && exit 4;
+    if [ ! -z $selenium ];then
+        zbx-util-color -H "selenium/data/data_test.sql"
+        docker exec zbx-box-postgres psql -q -U postgres -d "$DBNAME" --file /var/www/html/$REF/frontends/php/tests/selenium/data/data_test.sql
+    fi
 
+    if [ ! -z $apijson ];then
+        zbx-util-color -H "api_json/data/data_test.sql"
+        docker exec zbx-box-postgres psql -q -U postgres -d "$DBNAME" --file /var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql
+    fi
+}
+
+mariadb() {
+    zbx-util-color -H "DROP DATABASE IF EXISTS \"$DBNAME\""
+    docker exec zbx-box-mariadb mysql -uroot -pzabbix -e "DROP DATABASE IF EXISTS \`$DBNAME\`"
+    zbx-util-color -H "CREATE DATABASE \"$DBNAME\""
+    docker exec zbx-box-mariadb mysql -uroot -pzabbix -e "CREATE DATABASE \`$DBNAME\` CHARACTER SET utf8 COLLATE utf8_bin;"
+    zbx-util-color -H "mysql/schema.sql"
+    docker exec zbx-box-mariadb mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/schema.sql"
+    zbx-util-color -H "mysql/images.sql"
+    docker exec zbx-box-mariadb mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/images.sql"
+    zbx-util-color -H "mysql/data.sql"
+    docker exec zbx-box-mariadb mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/data.sql"
+
+    if [ ! -z $selenium ];then
+        zbx-util-color -H "selenium/data/data_test.sql"
+        docker exec zbx-box-mariadb mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/frontends/php/tests/selenium/data/data_test.sql"
+    fi
+
+    if [ ! -z $apijson ];then
+        zbx-util-color -H "api_json/data/data_test.sql"
+        docker exec zbx-box-mariadb mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql"
+    fi
+}
+
+oracle() {
+    >&2 echo "TODO: Not implemeted!"
+    exit 100
+}
+
+ex_dbs=()
 while [[ $# > 0 ]];do case $1 in
-    #- Use modern db cli with completion
-    -M | --modern ) MODERN=1 ;;
+    #- Apply database to postgres service.
+    -P | --postgres ) ex_dbs+=(postgres) ;;
+    # TODO: some issues here still to fix..
+    #- <{WIP}> Apply database to mariadb service.
+    -M | --mariadb ) ex_dbs+=(mariadb) ;;
+    #- <{WIP}> Apply database to mariadb service.
+    -O | --oracle ) ex_dbs+=(oracle) ;;
+    #- Apply "api_json" data set.
+    -A | --api-json ) apijson=1 ;;
+    #- Apply "selenium" data set.
+    -S | --selenium ) selenium=1 ;;
+    #- <[a-z\-_]> Add affix to database name
+    -N | --named ) shift; affix=$1 ;;
 esac;shift;done
 
-if [ ! -z $MODERN ];then
-    docker run -it --name zbx-box-db-pgcli --rm --network zbx-box --link zbx-box-db:postgres kubetools/pgcli postgresql://postgres:example@zbx-box-db:5432/$REF
-else
-    docker exec -it zbx-box-db psql --dbname "$REF" -U postgres
-fi
+DBNAME="${REF}${affix}"
+for ex_db in ${ex_dbs[*]}; do
+    $ex_db
+done

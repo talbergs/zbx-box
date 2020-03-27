@@ -1,32 +1,15 @@
 #!/bin/bash
+### Usage: $0
+# TODO: documentation
+
 source zbx-script-header
-### $0 <zref?> <default args>
-## Host (-z) and port (-p) are pre-filled.
-##
-## Example: $0 -s host -k item-key -o value
-## Example: $0 -s host -i input-file
+source zbx-get-ref
 
-bak=$1;case $1 in
-.      ) REF=$(echo "$LOCALREFS" | fzf);shift;;
-'' | -*) REF=$(zbx-util-guess-ref);        [ -z "$REF" ] && exit 2        ;;
-m*     ) REF=master;shift;;
-*      ) REF=$(zbx-util-validate-zref $1); [ -z "$REF" ] && exit 3 ; shift;;
-esac
+DREF=$(zbx-util-ref-to-dref $REF)
+container_id=$(zbx-container-id $DREF-server)
 
-SENDER_BIN=$WORKTREE/$REF/dist/bin/zabbix_sender
-
-[ ! -x $SENDER_BIN ] \
-    && >&2 printf "Not found $SENDER_BIN" \
-    && exit 3
-
-
-DREF=$(echo $REF | tr / _)
-if [ -z "$(docker ps -f name=zbx-box-server-$DREF -q)" ];then
-    >&2 printf "No docker service \"zbx-box-server-$DREF\" found\n";exit 4
-fi
-
-SERVICE_IP=$(docker inspect -f \
-'{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' \
-zbx-box-server-$DREF)
-
-$SENDER_BIN -z $SERVICE_IP -p 10051 "$@" -v
+docker exec \
+    -it \
+    --workdir /var/www/html/$REF \
+    $container_id \
+    ./dist/bin/zabbix_sender "$@"

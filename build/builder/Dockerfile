@@ -1,21 +1,38 @@
-FROM archlinux/base
+FROM alpine:3.11.3@sha256:c40c013324aa73f430d33724d8030c34b1881e96b23f44ec616f1caf8dbf445f
 
-RUN pacman -Syu --noconfirm
+ENV AR_FLAGS=cr
+ENV MAKEFLAGS=j9
 
-RUN pacman -S --noconfirm \
+RUN apk --no-cache add \
+    alpine-sdk \
+    coreutils \
     automake \
     autoconf \
-    grep \
-    gcc \
-    make
+    mysql-dev \
+    postgresql-libs \
+    libxml2-dev \
+    unixodbc-dev \
+    net-snmp-dev \
+    libssh2-dev \
+    openipmi-dev \
+    openldap-dev \
+    curl-dev \
+    libevent-dev \
+    pcre-dev
 
-RUN pacman -S --noconfirm libevent
-RUN pacman -S --noconfirm postgresql-libs
+# Styles builder.
+# Note: verison must nut be changed because of workflow.
+RUN apk --no-cache add ruby
+RUN gem install sass --version='3.4.22'
 
-RUN pacman -S --noconfirm docker
-RUN pacman -S --noconfirm openbsd-netcat
+# Openbsd netcat for zbx,follow
+RUN apk --no-cache add netcat-openbsd
 
-RUN pacman -S --noconfirm pkg-config
+# Bash for bash programms (for locale generator)
+RUN apk --no-cache add bash gettext
 
-ENV ARFLAGS=cr
-ENV MAKEFLAGS=j9
+# This image is used to run zabbix_server also.
+RUN apk --no-cache add postgresql-dev
+RUN adduser zabbix --disabled-password
+RUN apk  --clean-protected --no-cache add sqlite-dev
+USER zabbix

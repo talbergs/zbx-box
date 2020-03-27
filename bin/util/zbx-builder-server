@@ -9,6 +9,7 @@ set -e
     --with-libcurl \
     --enable-proxy \
     --with-postgresql \
+    --with-mysql \
     --prefix="$PWD/dist"
 
 make

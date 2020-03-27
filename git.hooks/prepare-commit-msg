@@ -1,24 +1,80 @@
 #!/bin/bash
-# Attention! This script is incompatible with plan nine.
+### The purpose of the hook is to edit the message file in place,
+### and it is not suppressed by the --no-verify option.
+## Creates various messages appropriately:
+## [x] Always ensures and even reassures correct flags.
+## [x] Merge message is formatted.
+## [x] Change-Log change message guessed.
+## [x] Merge with conflicts will list conflict files.
+## [x] Ticket number taken from folder name.
+## [x] Many more good stuff..
 
 COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
-# SHA1=$3
+COMMIT_SHA=$3
 
-#
-# Removes the "# Please enter the commit message..." help message.
-#
-# /usr/bin/perl -i.bak -ne 'print unless(m/^. Please enter the commit message/..m/^#$/)' "$COMMIT_MSG_FILE"
+status-flags() {
+    git status --porcelain \
+        | sed -n -e '/^[AMTRD]/{s/...//;p}' \
+        | zbx.flags
+}
 
-#
-# Generates message header.
-#
-if [ -z $2 ];then
-    branch=$(zbx.resolve --ticket)
-    flags="$(git status --porcelain \
-        | grep '^[DRMAT]' \
-        | awk '{print "/"$2}' \
-        | zbx.flags)"
+ticket-name() {
+    basename $(git rev-parse --show-toplevel) | cut -d- -f1-2
+}
 
-    sed -i "1s;^;$flags [$branch] \n;" $COMMIT_MSG_FILE
-fi
+guess-message() {
+    if [ ! -z "$(git status --porcelain | grep '^D.*ChangeLog\.d')" ];then
+        echo -n "deleted|renamed change log entry"
+    elif [ ! -z "$(git status --porcelain | grep '^M.*ChangeLog\.d')" ];then
+        echo -n "updated change log entry"
+    elif [ ! -z "$(git status --porcelain | grep '^A.*ChangeLog\.d')" ];then
+        echo -n "added change log entry"
+    fi
+}
+
+case "$COMMIT_SOURCE" in
+# if a -m or -F option was given
+message)
+    # if git cherry-pick -m 1 -x f1ab96d13 , then do not do anything with message
+    if [ ! -z "$(grep '^(cherry picked from commit \w*)$' "$COMMIT_MSG_FILE")" ];then
+		cat $COMMIT_MSG_FILE
+        # Do nothing.
+    else
+		# the passed in message argument will be prefixed with commit header
+		sed -i -e "1s;^;$(status-flags) [$(ticket-name)] ;" "$COMMIT_MSG_FILE"
+		# comment out squash history, it's private
+		sed -i -e '/^# This/,/^# Please enter the commit message/{s/^/# /}' "$COMMIT_MSG_FILE"
+    fi
+;;
+# if a -t option was given or the configuration option commit.template is set
+template)
+    # do nothing
+;;
+# if the commit is a merge or a .git/MERGE_MSG file exists
+merge)
+    # capture branch name on first line and prefix with common merge message before printing
+    sed -i -e "1s;^.*'\(.*\)'.*$;$(zbx.flags -) [$(ticket-name)] updated to latest from \^\1;" "$COMMIT_MSG_FILE"
+    if [ -z "$(grep '# Conflicts:' "$COMMIT_MSG_FILE")" ];then
+        # append "no conflicts" if no conflicts found
+        sed -i -e "1s|$|; no conflicts\n|" "$COMMIT_MSG_FILE"
+    else
+        # else uncomment all conflicting files and append newline
+        sed -i -e "1s/$/\n/" -e '/^# Conflicts:$/,/^#$/{s/^#//}' "$COMMIT_MSG_FILE"
+    fi
+;;
+# if a .git/SQUASH_MSG file exists
+squash)
+    # correct for flags
+    sed -i -e "1s;^.*$; $(status-flags) [$(ticket-name)]\n;" "$COMMIT_MSG_FILE"
+;;
+# if a -c, -C or --amend option was given, now also $COMMIT_SHA will be set..
+commit)
+    # correct for flags only
+    sed -i -e "1s;^.\{10\}\(.*\)$;$(status-flags)\1;" "$COMMIT_MSG_FILE"
+;;
+# if git commit
+"")
+    sed -i -e "1s;^;$(status-flags) [$(ticket-name)] $(guess-message)\n;" "$COMMIT_MSG_FILE"
+;;
+esac

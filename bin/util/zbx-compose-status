@@ -1,0 +1,38 @@
+#!/bin/bash
+### Print status
+## Used in zbx,box
+name=$1
+
+containerid=$(zbx-container-id $name)
+
+active=$(docker ps -q --filter id=$containerid)
+if [ ! -z $active ];then
+    title="[x] Service '$name' is running"
+else
+    title="[ ] Service '$name' is not running"
+fi
+
+if [ ! -z $containerid ];then
+    # docker logs chooses stderr if container is not running
+    # TODO: is log itself remembered to stderr also? (saw it on running container)
+    if [ ! -z $active ];then
+        logs=$(docker logs --tail 5 $containerid)
+    else
+        logs=$(docker logs --tail 5 $containerid 2>&1 >/dev/null)
+    fi
+
+    logs=("$logs", "Last logs")
+fi
+
+lines=()
+lines+=("Image: $(zbx-image-id $name)")
+lines+=("Container: $containerid")
+
+for i in "${lines[@]}"
+do
+    echo $i
+done | zbx-util-color -H "$title"
+
+if [ ! -z "$logs" ];then
+    echo "${logs[0]}" | zbx-util-color -H "${logs[1]}"
+fi

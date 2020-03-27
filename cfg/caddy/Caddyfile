@@ -1,0 +1,82 @@
+# Unstable Caddyfile - written at version 2.0.0-beta-17
+# Resource: https://shibumi.dev/posts/new-caddyfile-and-more/
+{
+    # by default allowed origin for admin API is localhost, now it is any
+    # to see config http://localhost:2019/config/
+    admin :2019
+    # Many vendors have stated that they will only support HTTP/2 over TLS
+}
+
+:80, :443, localhost:443, *.localhost:443, *.*.localhost:443
+
+tls internal
+
+# soon (in beta-18): https://github.com/caddyserver/caddy/commit/fc7340e11aa9ca6326909aedfd36bb2c5b53d2a8
+# https://github.com/caddyserver/caddy/issues/3058 (the localhost:443 domain name can be removed)
+# tls internal {
+#     on_demand
+# }
+
+root * /var/www/html
+
+##}}}## ###############################
+#     # ##        SHORT URLS        ##
+#     # ##############################
+#     # # /master # /4.0 # /ZBX-123  #
+##{{{## ##############################
+# localhost/master/
+@master {
+    path_regexp ^\/master\/(?P<more>.*)?$
+}
+rewrite @master /master/frontends/php/{http.regexp.more}
+
+# localhost/4.0/
+@release {
+    path_regexp ^\/(?P<version>\d[^\/]*)\/(?P<more>.*)?$
+}
+rewrite @release /release/{http.regexp.version}/frontends/php/{http.regexp.more}
+
+# localhost/ZBX-123-4.0/ | localhost/DEV-123-4.0/
+@feature {
+    path_regexp ^\/(?P<branch>[D|Z][^\/]*)(?P<more>[\/].*)?$
+}
+rewrite @feature /feature/{http.regexp.branch}/frontends/php/{http.regexp.more}
+
+##}}}## ###############################
+#     # ##     ENCODING DIRECTIVE    ##
+#     # ###############################
+#     # #                             #
+##{{{## ###############################
+# https://github.com/facebook/zstd is not widely supported yet
+encode zstd brotli
+
+
+##}}}## ###############################
+#     # ##   SUBDOMAIN PHP VERSION   ##
+#     # ###############################
+#     # # php-5.4 # php-7.2 # php-7.4 #
+##{{{## ###############################
+@php72 {
+    host 72.*
+}
+php_fastcgi @php72 zbx-box-php72-fpm:9000
+
+@php74 {
+    host 74.*
+}
+php_fastcgi @php74 zbx-box-php74-fpm:9000
+
+@php54 {
+    host 54.*
+}
+php_fastcgi @php54 zbx-box-php54-fpm:9000
+
+##}}}## ###############################
+#     # ##       FILE BROWSER        ##
+#     # ###############################
+#     # #                             #
+##{{{## ###############################
+# Directive order matters - "file_server" directive must be after "php_fastcgi"
+# See: https://caddyserver.com/docs/caddyfile/directives#directive-order
+file_server * browse
+file_server

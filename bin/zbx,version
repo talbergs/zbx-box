@@ -1,30 +1,47 @@
 #!/bin/bash
-### Usage: $0 <zref?> [FLAGS..]
+### Usage: $0 <zref?> FLAG?
+## Prints various version numbers.
+## Accepts only one switch at most.
+## Example:
+##         $0 . --major
+##         # This will open fuzzy finder to select one of available workspaces,
+##         # then will print major version. For example - 5.0
+## Example:
+##         $0 --api
+##         # Will attempt to determine workspace based on \$PWD, then print API version.
+## Example:
+##         $0
+##         # Will attempt to determine workspace based on \$PWD, then print full frontend version.
+##         # For example: "5.0.0beta1"
+## Example:
+##         $0 4.0
+##         # Will use 'release/4.0' workspace and print full frontend version.
+##         # For example: "4.4.7rc1"
+##~
 source zbx-script-header
-## Fetches various versions.
-## Arg: <zref>
-case $1 in
-. ) REF=$(echo "$LOCALREFS" | fzf);shift;;
-m*) REF=master;shift;;
-'') REF=$(zbx-util-guess-ref);;
--*) REF=$(zbx-util-guess-ref);;
-* ) REF=$(zbx-util-validate-zref $1);shift;;
-esac
+source zbx-get-ref
 
-[ -z $REF ] && exit 4;
+if [ $# -eq 0 ]; then
+    $0 $REF -Mn
+    exit $?
+fi
+
+if [ $# -gt 1 ]; then
+    >&2 echo "At most one switch is allowed!"
+    exit 2
+fi
+
 DEFINES=$WORKTREE/$REF/frontends/php/include/defines.inc.php
-
-## By default gives full frontend version.
-[ $# -eq 0 ] && awk -F"'" '/ZABBIX_VERSION/{printf "%s", $4}' $DEFINES
-
 while [[ "$#" > 0 ]]; do case $1 in
-    #- fetches db version
-    -D|--db) awk -F'[^0-9]+' '/ZABBIX_DB_VERSION/{printf "%s", $2}' $DEFINES;;
-    #- fetches export version
-    -E|--export) awk -F"'" '/ZABBIX_EXPORT_VERSION/{printf "%s", $4}' $DEFINES;;
-    #- fetches api version
-    -A|--api) awk -F"'" '/ZABBIX_API_VERSION/{printf "%s", $4}' $DEFINES;;
-    #- fetches major frontend version (release up to 9th)
-    -M|--major) awk -F"'" '/ZABBIX_VERSION/{printf "%s",substr($4,0,3)}' $DEFINES;;
+    #- Fetches db version.
+    -D | --db) awk -F'[^0-9]+' '/ZABBIX_DB_VERSION/{printf "%s", $2}' $DEFINES;;
+    #- Fetches export version.
+    -E | --export) awk -F"'" '/ZABBIX_EXPORT_VERSION/{printf "%s", $4}' $DEFINES;;
+    #- Fetches api version.
+    -A | --api) awk -F"'" '/ZABBIX_API_VERSION/{printf "%s", $4}' $DEFINES;;
+    #- Fetches major frontend version.
+    -M | --major) awk -F"'" '/ZABBIX_VERSION/{printf "%s",substr($4,0,3)}' $DEFINES;;
+    #- Fetches minor frontend version (default).
+    -Mn| --minor) awk -F"'" '/ZABBIX_VERSION/{printf "%s", $4}' $DEFINES;;
     *) echo "Unknown parameter passed: $1"; exit 1;;
 esac; shift; done

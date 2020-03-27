@@ -1,19 +1,43 @@
 #!/bin/bash
-### Usage: $0 <zref?> [FLAGS..]
+### Usage: $0 <zref?> [FLAG?]
+## Shorthand to open workspace in browser.
+## Ensures correct subdomain to be used (subdomain swithces php versions).
+## Based on workspace version either php 5.4 or php 7.2 is chosen as minimal supported version.
+## Example:
+##         $0 .
+##         # This will open fuzzy finder to select one of available workspaces,
+##         # then constructed wen web URL will be opened.
+## Example:
+##         $0
+##         # Will attempt to determine workspace based on \$PWD, then point browser.
+## Example:
+##         $0 -n
+##         # Do not open browser, only echo derrived URL.
+## Example:
+##         $0 4.4 -n
+##         # Will echo url for given workspace.
+##~
 source zbx-script-header
-## Shorthand to open browser.
-## Usage:
-## >$ $0 # to guess
-## >$ $0 . # to open fzf menu
-## >$ $0 <zref> # to create link
+source zbx-get-ref
 
-case $1 in
-. ) REF=$(echo "$LOCALREFS" | fzf);shift;;
-m*) REF=master;shift;;
-'') REF=$(zbx-util-guess-ref);;
-* ) REF=$(zbx-util-validate-zref $1);shift;;
-esac
+while [[ "$#" > 0 ]]; do case $1 in
+    #- Dry run - only echo URL
+    #- Ussually used to pipe it into clipboard when needed.
+    -n ) dry_run=1 ;;
+    *) echo "Unknown parameter passed: $1"; exit 1;;
+esac; shift; done
 
-[ -z $REF ] && exit 1
+if (( $(echo "$(zbx,version $REF --major) < 5.0" | bc -l) ));then
+	MIN_REQ_PHP_VERSION_SUBDOMAIN=54
+else
+	MIN_REQ_PHP_VERSION_SUBDOMAIN=72
+fi
 
-$BROWSER "${WEBTLD%/}/$(basename $REF)/" &> /dev/null
+URL="https://${MIN_REQ_PHP_VERSION_SUBDOMAIN}.${WEBTLD%/}/$(basename $REF)/"
+
+if [ -z $dry_run ];then
+    echo $URL
+    $BROWSER "$URL" &> /dev/null
+else
+    echo -n $URL
+fi

@@ -1,0 +1,24 @@
+#!/bin/bash
+### Usage: $0 <template> [ARG=VALUE..]
+## Variables are replaced only within "{{" and "}}" notation.
+## Example:
+##         $0 path-to-tmpl REF=master pass=xx
+##         # The template may look like so:
+##         #    $pass = ["user", "{{ $pass }}"];
+##         # Resulting in:
+##         #    $pass = ["user", "xxx"];
+##~
+
+tmpl=$1
+shift
+
+for i in $@; do
+    declare $i;
+done
+
+# Prefix all double quotes and "$" with backslash, then unwrap mustaches.
+prep-tmpl() {
+    sed -e 's/"/\\"/g' -e 's/\$/\\$/g' -e 's/{{\s*\\\(\$\w*\)\s*}}/\1/g' $1
+}
+
+eval "echo \"$(prep-tmpl $tmpl)\""

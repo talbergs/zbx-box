@@ -1,0 +1,17 @@
+#!/bin/bash
+### Usage: $0 <ref>
+## Creates docker ref from ref, because slash is not allowed in container names.
+## Ref name is shortened, by removing a common leading "release/" or "feature/" string.
+## Example:
+##         $0 release/4.0
+##         # This will determine ref based on \$PWD, then build postgresql database
+##         # then add selenium data.sql topping.
+##~
+
+if [ -z $1 ];then
+    >&2 echo "'$0' - an argument is mandatory!"
+    exit 120
+fi
+
+dref=${1##release/}
+echo -n ${dref##feature/} | tr / _

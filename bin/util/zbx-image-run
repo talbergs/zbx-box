@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# <image_id> <options..> -- <command..>
+name=$1
+img=$(zbx-image-id $name)
+
+shift
+
+args=()
+cmd=()
+
+while [[ $# > 0 ]];do
+    case $1 in
+        -- ) tocmd=1 ;;
+        *  ) [ -z $tocmd ] && args+=($1) || cmd+=("$1") ;;
+    esac
+    shift
+done
+
+# Support multiline command strings and with "&&" and pipes
+if (( ${#cmd[@]} ));then
+    cmd=(sh -c "$(IFS=' ' eval 'echo "${cmd[*]}"')")
+else
+    cmd=()
+    detach=--detach
+fi
+
+docker run \
+	--network zbx-box \
+	--volume zbx-box:/var/www/html \
+	--label zbx-box=$name \
+    $detach \
+	--name zbx-box-$name ${args[@]} $img "${cmd[@]}"

@@ -1,0 +1,29 @@
+#!/bin/bash
+### Usage: $0 <zref?> [FLAGS..]
+## --healthcheck
+##     prints overview for workspace if database is build
+##  if server is build etc ..
+## --strings string changes
+##~
+### TODO: WIP!
+source zbx-script-header
+source zbx-get-ref
+
+stat_sql() {
+    if [ -e $WORKTREE/$REF/database/postgresql/schema.sql ];then
+        echo -n "[x]"
+    else
+        echo -n "[ ]"
+    fi
+    echo " SQL files."
+}
+
+ex=()
+while [[ $# > 0 ]];do case $1 in
+    #- Apply database to postgres service.
+    -H | --healthcheck ) ex+=(stat_sql) ;;
+    *) >&2 echo "Unknown parameter passed: $1"; exit 1;;
+esac;shift;done
+for e in ${ex[*]}; do
+    $e
+done

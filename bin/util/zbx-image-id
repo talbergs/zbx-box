@@ -1,0 +1,6 @@
+#!/bin/bash
+
+### Get image id by name.
+## <name>
+name=$1
+docker images -q -f "label=zbx-box=$name"

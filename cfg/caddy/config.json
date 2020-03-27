@@ -1,0 +1,22 @@
+{
+  "admin": {
+    "listen": ":2019"
+  },
+	"apps": {
+		"http": {
+			"servers": {
+				"zbx-box": {
+					"listen": [":80", ":433"],
+					"routes": [
+						{
+              "handle": [{
+								"handler": "file_server",
+								"root": "/www"
+							}]
+						}
+					]
+				}
+			}
+		}
+	}
+}

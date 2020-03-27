@@ -1,0 +1,138 @@
+#!/bin/bash
+### Usage: $0 <zref?> [FLAGS..]
+## Builds various things based on switches.
+## Example:
+##         $0 . --server --database
+##         # This will open fuzzy finder to select one of available workspaces,
+##         # then for a chosen workspace server and schema will be built
+##         # from within disposable container.
+## Example:
+##         $0 --server --database
+##         # This will attempt to determine workspace based on \$PWD,
+##         # if workspace is found, server and schema will be built
+##         # from within disposable container.
+## Example:
+##         $0 m --server --database
+##         # Same as above, but the workspace will be 'master'.
+## Example:
+##         $0 4.0 --server --database
+##         # Same as above, but the workspace will be 'release/4.0'.
+## Example:
+##         $0 DEV-1471-4.0 --server --database
+##         # Same as above, but the workspace will be 'feature/DEV-1471-4.0'.
+##~
+source zbx-script-header
+source zbx-get-ref
+
+# zbx-decompose builder
+# zbx-image-build builder
+# TODO: FIX multiple builder images appear (take recent one)
+
+# TODO: This deletes all stopped containers.
+docker container prune --filter="label=zbx-box" --force
+
+build() {
+    zbx-compose builder \
+        --rm \
+        --cpus 8 \
+        --memory-swappiness 0 \
+        --workdir /var/www/html/$REF \
+        -- "$1"
+}
+
+build_database() {
+    build '
+        ./bootstrap.sh
+        && ./configure -q --with-postgresql --with-mysql
+        && make dbschema
+    ' | zbx-util-color -H "Building database '$REF' .."
+}
+
+build_server_postgres() {
+    build_server postgresql
+}
+
+build_server_mysql() {
+    build_server mysql
+}
+
+build_server_oracle() {
+    >&2 echo "TODO: Not implemeted!"
+    exit 100
+}
+
+build_server() {
+    build '
+        ./bootstrap.sh
+        && ./configure
+            -q
+            --enable-server
+            --with-libcurl
+            --with-'$1'
+            --prefix="$PWD/dist"
+        && make
+        && make install
+    ' | zbx-util-color -H "Building server '$REF' (type: $1) .."
+}
+
+build_proxy() {
+    build '
+        ./bootstrap.sh
+        && ./configure
+            -q
+            --enable-proxy
+            --with-sqlite3
+            --with-libcurl
+            --prefix="$PWD/dist"
+        && make
+        && make install
+    ' | zbx-util-color -H "Building proxy '$REF' .."
+}
+
+build_agent() {
+    build '
+        ./bootstrap.sh
+        && ./configure
+            -q
+            --enable-agent
+            --with-libcurl
+            --prefix="$PWD/dist"
+        && make
+        && make install
+    ' | zbx-util-color -H "Building agent '$REF' .."
+}
+
+build_styles() {
+    build '
+        make css
+    ' | zbx-util-color -H "Building css in '$REF' .." -P 4
+}
+
+build_locales() {
+    build '/var/www/html/'$REF'/frontends/php/locale/make_mo.sh' \
+     | zbx-util-color -H "Building locales in '$REF' .." -P 4 \
+     && echo "Done building locales in '$REF'" | zbx-util-color
+}
+
+declare -a ex
+while [[ $# > 0 ]];do case $1 in
+    #- Build DB all schema variants.
+    -D | --database ) ex+=(build_database) ;;
+    #- Build styles using sass.
+    -C | --css ) ex+=(build_styles) ;;
+    #- Generate locales and translation files.
+    -L | --locales ) ex+=(build_locales) ;;
+    #- Build agent (emits: zabbix_get and zabbix_sender)
+    -A | --agent ) ex+=(build_agent) ;;
+    #- Build proxy (sqlite3 variant) (emits: zabbix_js zabbix_proxy)
+    -P | --proxy ) ex+=(build_proxy) ;;
+    #- Build server (postgres invariant).
+    -Sp| --server-postgres ) ex+=(build_server_postgres) ;;
+    #- Build server (mysql invariant).
+    -Sm| --server-mysql ) ex+=(build_server_mysql) ;;
+    #- Build server (oracle invariant).
+    -So| --server-oracle ) ex+=(build_server_oracle) ;;
+    * ) >&2 echo "Unrecognized option $1"; exit 2 ;;
+esac;shift;done
+
+for i in ${ex[*]}; do $i; done

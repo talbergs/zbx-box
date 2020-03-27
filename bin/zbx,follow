@@ -1,0 +1,6 @@
+#!/bin/bash
+source zbx-script-header
+    
+zbx-decompose builder
+zbx-image-build builder
+zbx-compose builder --rm -- nc -lkU /var/www/html/debug.sock

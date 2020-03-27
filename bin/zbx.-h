@@ -23,6 +23,7 @@
 [[ -z $1 ]] && $0 "$0" && exit 9
 [[ ! -x $1 ]] && >&2 echo Shouldn\'t \"$1\" be executable? && exit 4
 
+# TODO: if line has 4 leading spaces apply sh highlight ansi
 awk -v PROG="$(basename $1)" '
 
 BEGIN {

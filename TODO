@@ -1,0 +1,9 @@
+- prep-commit-message.hook: cherry-pick should not add ";no conflicts" if --no-commit used
+- generate "Available in:" list jira comment (may match on commit message string)
+
+- ,,box - it can start stopped container if found
+
+
+# server/agent
+- zbx,run server just block foreground and give all the logs
+- zbx,run agent just block foreground and give all the logs

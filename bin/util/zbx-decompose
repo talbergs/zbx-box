@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Take service down.
+# <name> --remove-container --remove-image
+name=$1
+shift
+
+case $1 in
+	--remove-container) rmc=1;shift;;
+	--remove-image) rmi=1;shift;;
+esac
+
+if [ ! -z $rmi ];then
+	rmc=1
+fi
+
+cid=$(zbx-container-id $name)
+if [ -z $cid ];then
+	zbx-util-color -H "No containers for $name found"
+else
+	zbx-util-color -H "Removing container for $name ($cid)"
+	docker rm -f $cid
+fi
+
+if [ ! -z $rmi ];then
+	img=$(zbx-image-id $name)
+	if [ -z $img ];then
+		zbx-util-color -H "No image for $name to remove"
+	else
+		zbx-util-color -H "Removing image for $name ($img)"
+		docker rmi -f $img
+	fi
+fi
+

@@ -2,7 +2,7 @@
 ## An utility used as a shorthand in scripts, providing -h as a first argument
 ## for help to be printed.
 
-set -e
+# set -e
 # set -o pipefail
 
 if [[ -z $ZBX_ENV_SOURCED ]];then

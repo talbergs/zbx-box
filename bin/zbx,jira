@@ -1,18 +1,36 @@
 #!/bin/bash
+### Usage: $0 <zref?> [FLAG?]
+## Shorthand to open jira ticker in browser.
+## Example:
+##         $0 .
+##         # This will open fuzzy finder to select one of available workspaces,
+##         # then constructed jira ticket URL will be opened.
+## Example:
+##         $0
+##         # Will attempt to determine workspace based on \$PWD, then point browser
+##         # jira ticket URL.
+## Example:
+##         $0 -n
+##         # Do not open browser, only echo derrived URL.
+## Example:
+##         $0 DEV-123-4.4 -n
+##         # Will echo url for given workspace.
+##~
 source zbx-script-header
-### Usage: $0 <zref?> [FLAGS..]
-## Shorthand to open browser.
-## Usage:
-## >$ zbx,web
+source zbx-get-ref
 
-case $1 in
-. ) REF=$(echo "$(ls-remote)" | fzf);shift;;
-'') REF=$(zbx-util-guess-ref);;
-* ) REF=$(zbx-util-validate-zref $1);shift;;
-esac
-
-[ -z $REF ] && exit 1
+while [[ "$#" > 0 ]]; do case $1 in
+    #- Dry run - only echo URL
+    #- Ussually used to pipe it into clipboard when needed.
+    -n ) dry_run=1 ;;
+    *) echo "Unknown parameter passed: $1"; exit 1;;
+esac; shift; done
 
 URL=${JIRAURL%/}/browse/$(zbx-util-ref-to-issue $REF)
-echo $URL
-$BROWSER $URL
+if [ -z $dry_run ];then
+    echo $URL
+    $BROWSER $URL
+else
+    echo -n $URL
+fi
+

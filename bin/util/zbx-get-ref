@@ -1,0 +1,17 @@
+#!/bin/bash
+source zbx-script-header
+
+### Usage #1: source $0
+## Common env REFS is used for fzf if set, else LOCALREFS
+## Produces REF variable if possible, else exit
+case $1 in
+    . ) REF=$(echo "${REFS:-$LOCALREFS}" | fzf);shift;;
+    m*) REF=master;shift;;
+    '') REF=$(zbx-util-guess-ref);;
+    -*) REF=$(zbx-util-guess-ref);;
+    * ) REF=$(zbx-util-validate-zref $1);shift;;
+esac
+
+if [ -z $REF ]; then
+    exit 4
+fi

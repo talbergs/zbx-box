@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Run sevice by name.
+# <name> <options..>
+name=$1
+shift
+args=$@
+img="$(zbx-image-id $name)"
+container="$(zbx-container-id $name)"
+
+if [ ! -z "$(docker ps -q --filter id=$container)" ];then
+	zbx-util-color -H "Service $name is already running ($container)"
+	exit 0
+fi
+
+if [ -z "$img" ];then
+	zbx-util-color -H "Building $name (no image found)"
+	zbx-image-build $name && zbx-compose $name $args
+else
+	zbx-util-color -H "Starting $name (using image $img)"
+	zbx-image-run $name $args
+fi
+
+exit $?

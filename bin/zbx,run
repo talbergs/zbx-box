@@ -1,0 +1,96 @@
+#!/bin/bash
+### Usage: $0
+## Orchistrates on-demand services.
+## Example:
+##         $0 -S
+##         # This will spin up server in container for \$PWD.
+## Example:
+##         $0 4.0 -S
+##         # Same as above, but use version 4.0.
+## Example:
+##         $0 . -S
+##         # Same as above, but offer menu with available workspaces.
+##~
+source zbx-script-header
+source zbx-get-ref
+
+# TODO: This deletes all stopped containers. Crutch!
+docker container prune --filter="label=zbx-box" --force
+
+stop-server() {
+    DREF=$(zbx-util-ref-to-dref $REF)
+    docker rm -f zbx-box-$DREF-server
+}
+
+run-server() {
+    DREF=$(zbx-util-ref-to-dref $REF)
+    docker run \
+        --rm \
+        --network zbx-box \
+        --volume zbx-box:/var/www/html \
+        --label zbx-box=$DREF-server \
+        --detach \
+        --name zbx-box-$DREF-server \
+        --workdir /var/www/html/$REF \
+        $builder_img \
+        bash -c '{
+            ./dist/sbin/zabbix_server \
+                --foreground \
+                --config ./zabbix_server.conf & \
+            tail -F ./dist/zabbix_server.log;
+        }'
+
+    if [ ! -z $foreground ];then
+        trap stop-server INT
+        docker logs -f zbx-box-$DREF-server | zbx-util-color
+    fi
+}
+
+stop-agent() {
+    DREF=$(zbx-util-ref-to-dref $REF)
+    docker rm -f zbx-box-$DREF-agent
+}
+
+run-agent() {
+    DREF=$(zbx-util-ref-to-dref $REF)
+    docker run \
+        --rm \
+        --network zbx-box \
+        --volume zbx-box:/var/www/html \
+        --label zbx-box=$DREF-agent \
+        --detach \
+        --name zbx-box-$DREF-agent \
+        --workdir /var/www/html/$REF \
+        $builder_img \
+        bash -c '{
+            ./dist/sbin/zabbix_agentd \
+                --foreground \
+                --config ./zabbix_agentd.conf & \
+            tail -F ./dist/zabbix_agentd.log;
+        }'
+
+    if [ ! -z $foreground ];then
+        trap stop-agent INT
+        docker logs -f zbx-box-$DREF-agent | zbx-util-color
+    fi
+}
+
+builder_img="$(zbx-image-id builder)"
+ex=()
+while [[ $# > 0 ]];do case $1 in
+    #- Run server.
+    -S | --server ) ex+=(run-server) ;;
+    #- Run agent.
+    -A | --agent ) ex+=(run-agent) ;;
+    #- Run server.
+    -Sx| --stop-server ) ex+=(stop-server) ;;
+    #- Stop agent.
+    -Ax| --stop-agent ) ex+=(stop-agent) ;;
+    #- Do not detach and block (Ctrl+Z do detach and Ctrl+C to exit).
+    #- Server logs are still always sent to containers standard output.
+    -F | --foreground ) foreground=1 ;;
+esac;shift;done
+
+for x in ${ex[*]}; do
+    $x
+done

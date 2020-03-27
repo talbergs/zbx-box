@@ -1,0 +1,25 @@
+<?php
+global $DB, $HISTORY;
+$DB['TYPE'] = 'POSTGRESQL';
+$DB['SERVER'] = 'zbx-box-postgres';
+$DB['PORT'] = '0';
+$DB['DATABASE'] = '{{ $REF }}';
+$DB['USER'] = 'postgres';
+$DB['PASSWORD'] = 'zabbix';
+$DB['SCHEMA'] = '';
+$ZBX_SERVER = 'zbx-box-{{ $DREF }}-server';
+$ZBX_SERVER_PORT = '10051';
+$IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
+
+/* // mariadb override */
+/* $DB['TYPE'] = 'MYSQL'; */
+/* $DB['SERVER'] = 'zbx-box-mariadb'; */
+/* $DB['USER'] = 'root' */;
+
+/* // oracle override */
+/* $DB['TYPE'] = 'ORACLE'; */
+/* $DB['SERVER'] = 'zbx-box-oracle'; */
+/* $DB['USER'] = 'root' */;
+
+$ZBX_SERVER_NAME = '{{ $REF }}'.$DB["TYPE"];
+

@@ -1,0 +1,11 @@
+LogFile=/var/www/html/{{ $REF }}/dist/zabbix_server.log
+DBHost=zbx-box-postgres
+DBName={{ $REF }}
+DBUser=postgres
+DBPassword=zabbix
+LogSlowQueries=200
+Timeout=4
+CacheSize=512M
+TrendCacheSize=64M
+ValueCacheSize=1G
+AlertScriptsPath=/var/www/html/{{ $REF }}/dist/share/zabbix/alertscripts

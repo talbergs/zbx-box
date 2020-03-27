@@ -20,7 +20,7 @@ mkdir -p $WORKTREE/{master,{feature,release}}
 
 [ ! -d "$WORKTREE/master/.git" ] && git clone $GITREMOTE $WORKTREE/master
 [ ! -f "$WORKTREE/master/.git/hooks/deployed" ] \
-    && cp -RT "$ZBX_BOX_ROOT/git.hooks" "$WORKTREE/master/.git/hooks"
+    && cp -RTf --symbolic-link "$ZBX_BOX_ROOT/git.hooks" "$WORKTREE/master/.git/hooks"
 
 # TODO bake these things: webgrind, opcache-gui, into dashboard
 [ ! -f "$WORKTREE/opcache-gui.php" ] && \
@@ -43,18 +43,11 @@ export PATH=$PATH:$ZBX_BOX_ROOT/bin/util
 REFS=
 ls-remote() {
     if [ -z $REFS ]; then
-        REFS=$(git ls-remote --refs --heads $GITREMOTE | sed 's|^.*heads/||g')
+        # REFS=$(git ls-remote --refs --heads $GITREMOTE | sed 's|^.*heads/||g')
+        # query server less, to get recent list do git fetch at this path
+        REFS=$(git ls-remote $WORKTREE/master/.git 'refs/remotes/origin/*' | awk -F'origin/' '{print $2}')
     fi
     echo "$REFS"
 }
 
 export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^branch' | sed 's#^.*heads/##')
-
-# echo -n $(cat $WORKTREE/master/frontends/php/include/defines.inc.php \
-#     | grep ZABBIX_VERSION \
-#     | awk -F\' '{print $4}')
-
-cd $ZBX_BOX_ROOT
-docker-compose up -d --remove-orphans &>/dev/null &
-cd - &> /dev/null
-# docker-compose up -d --remove-orphans $ZBX_BOX_ENABLED_SERVICES

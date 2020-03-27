@@ -10,7 +10,6 @@ How-to:
 Checkpoints:
 - [ ] Developer dashboard (overview and links)
 - [x] containerized (all you need is a docker, terminal and browser)
-- [ ] all is arch based (just because)
 - [x] postgresql
 - [ ] oracle
 - [ ] mariadb

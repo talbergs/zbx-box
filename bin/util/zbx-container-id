@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Get container id by name.
+# <name>
+name=$1
+
+# TODO: the `-n 1` flags chooses last created container, might also take all and offer to clear the leak.
+docker container ls -f label=zbx-box=$name -qa -n 1

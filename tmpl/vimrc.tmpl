@@ -1,0 +1,16 @@
+" zabbix project specific editor configuration
+fun s:on_file(fname)
+    if exists('b:zfnamed')|return|el|let b:zfnamed=1|en
+    setl noexpandtab
+    setl tabstop=4
+
+    let l:ext = fnamemodify(a:fname, ':e')
+    if l:ext == 'php'
+        nn <buffer><silent> gf :call fzf#vim#files('.', {'options':'-q '.substitute(expand('<cfile>'),'/','','').' --prompt ">: "'})<cr>
+    elsei l:ext == 'tmpl'
+        setf sql
+    en
+endf
+
+au BufNewFile,BufRead * call s:on_file(expand('<amatch>'))
+au BufWritePost screen.scss execute('sil !zbx+assets 2>&1 | xargs -L1 -d "\n" notify-send')
