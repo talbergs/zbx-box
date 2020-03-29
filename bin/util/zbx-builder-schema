@@ -1,8 +1,0 @@
-#!/bin/bash
-set -e
-
-./bootstrap.sh
-
-./configure -q --with-postgresql
-
-make dbschema
