@@ -1,5 +1,6 @@
 #!/bin/bash
 ### Usage: $0
+## To get help from zabbix_sender binary use mid-short flag "-help".
 # TODO: documentation
 
 source zbx-script-header

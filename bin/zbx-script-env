@@ -51,3 +51,23 @@ ls-remote() {
 }
 
 export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^branch' | sed 's#^.*heads/##')
+
+# TODO: use labels, add more volumes for database invariants. Fix permissions.
+[ -z "$(docker network ls -f name='^zbx-box$' -q)" ] && docker network create zbx-box \
+    | zbx-util-color -H "docker network create zbx-box"
+
+[ -z "$(docker volume ls -f name='^zbx-box-data$' -q)" ] && docker volume create \
+    --driver local \
+    --opt type=none \
+    --opt device=$ZBX_BOX_ROOT/data \
+    --opt o=bind \
+    --name zbx-box-data \
+    | zbx-util-color -H "docker volume create zbx-box-data (device=$ZBX_BOX_ROOT/data)"
+
+[ -z "$(docker volume ls -f name='^zbx-box$' -q)" ] && docker volume create \
+    --driver local \
+    --opt type=none \
+    --opt device=$WORKTREE \
+    --opt o=bind \
+    --name zbx-box \
+    | zbx-util-color -H "docker volume create zbx-box-data (device=$WORKTREE)"

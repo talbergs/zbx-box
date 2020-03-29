@@ -112,6 +112,7 @@ build_locales() {
     build '/var/www/html/'$REF'/frontends/php/locale/make_mo.sh' \
      | zbx-util-color -H "Building locales in '$REF' .." -P 4 \
      && echo "Done building locales in '$REF'" | zbx-util-color
+    zbx-util-color -H '::info:: PHP services has to be restarted for changes to take effect!'
 }
 
 declare -a ex
@@ -120,7 +121,7 @@ while [[ $# > 0 ]];do case $1 in
     -D | --database ) ex+=(build_database) ;;
     #- Build styles using sass.
     -C | --css ) ex+=(build_styles) ;;
-    #- Generate locales and translation files.
+    #- Generate locales and translation files (*.mo files).
     -L | --locales ) ex+=(build_locales) ;;
     #- Build agent (emits: zabbix_get and zabbix_sender)
     -A | --agent ) ex+=(build_agent) ;;

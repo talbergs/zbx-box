@@ -7,3 +7,6 @@
 # server/agent
 - zbx,run server just block foreground and give all the logs
 - zbx,run agent just block foreground and give all the logs
+
+# TODO: automate documentation to be extract from scripts into markdown.
+# TODO: automate todo list to be extracted.
