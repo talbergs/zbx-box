@@ -2,12 +2,13 @@
 ### The purpose of the hook is to edit the message file in place,
 ### and it is not suppressed by the --no-verify option.
 ## Creates various messages appropriately:
-## [x] Always ensures and even reassures correct flags.
+## [x] Always ensures and even reassures correct flags!
 ## [x] Merge message is formatted.
-## [x] Change-Log change message guessed.
-## [x] Merge with conflicts will list conflict files.
-## [x] Ticket number taken from folder name.
+## [x] Change-Log change message guessed!
+## [x] Merge with conflicts will list conflicted files.
+## [x] Ticket number taken from folder name!
 ## [x] Many more good stuff..
+##~
 
 COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2

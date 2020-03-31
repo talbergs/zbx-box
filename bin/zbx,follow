@@ -2,6 +2,4 @@
 source zbx-script-header
 source zbx-get-ref
     
-zbx-decompose builder
-zbx-image-build builder
-zbx-compose builder --rm -- nc -lkU /var/www/html/debug.sock
+zbx-compose builder -it --rm -- nc -lkU /var/www/html/debug.sock

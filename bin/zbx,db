@@ -75,10 +75,16 @@ oracle() {
     exit 100
 }
 
+postgres-query() {
+    docker exec -it zbx-box-postgres psql -q -U postgres -d "$DBNAME"
+}
+
 ex_dbs=()
 while [[ $# > 0 ]];do case $1 in
     #- Apply database to postgres service.
     -P | --postgres ) ex_dbs+=(postgres) ;;
+    #- Quick open repl (use current database).
+    -Pq| --postgres-query ) ex_dbs+=(postgres-query) ;;
     # TODO: some issues here still to fix..
     #- <{WIP}> Apply database to mariadb service.
     -M | --mariadb ) ex_dbs+=(mariadb) ;;

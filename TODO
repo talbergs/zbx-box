@@ -22,3 +22,8 @@
 
 -=API SEEDS=-
 !! ensure zabbix agent interface of type DNS is set correctly
+
+remove worktree dir, db and
+
+pg_restore --clean -Upostgres -d zabbix ./zbx-16162.backup
+TODO: pg_restore fails if db export user is "zabbix"

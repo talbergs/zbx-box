@@ -44,7 +44,5 @@ RUN apk add --update --no-cache \
       docker-php-ext-install ldap && \
       apk del .docker-php-ldap-dependancies
 
-# Big clean
-# RUN apk del .docker-php-global-dependancies && \
-#     rm -rf /var/cache/apk/* && \
-#     docker-php-source delete
+# TODO: remove this
+RUN apk --no-cache add netcat-openbsd
