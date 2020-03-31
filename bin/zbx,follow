@@ -1,5 +1,6 @@
 #!/bin/bash
 source zbx-script-header
+source zbx-get-ref
     
 zbx-decompose builder
 zbx-image-build builder

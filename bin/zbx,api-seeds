@@ -1,5 +1,5 @@
 #!/bin/bash
-source zbx-script-header
+# source zbx-script-header
 ### Usage: $0 <zref?> [FLAGS..]
 ## Seeds various common data things - all level user accounts, trapper and host.
 ## uses API calls

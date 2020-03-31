@@ -10,3 +10,15 @@
 
 # TODO: automate documentation to be extract from scripts into markdown.
 # TODO: automate todo list to be extracted.
+
+!! postgres db persistance
+
+-= STREAMLINE =-
+!! zbx,db -P (should offer to build schemas if needed), else zbx,make -D and zbx,db -P had to be rerun
+!! zbx,run -A (should offer to build agent if needed) .. and then run as expected
+!! zbx,dev did not set upstreame when creating new branch ? 
+!! quickly open error logs for php and more
+!! changelog generator added excess whitespace in front .. also no flags on empty .. 
+
+-=API SEEDS=-
+!! ensure zabbix agent interface of type DNS is set correctly

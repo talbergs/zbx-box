@@ -1,5 +1,5 @@
 #!/bin/bash
-### Usage: $0 FILE
+### Usage: $0 [FILE] [NO_ANSI?]
 ### Accepts a file name and extract documentation from comments.
 ## Special shell comment strings will be grouped and formatted:
 ##  "###" Bolded short summary section.
@@ -24,7 +24,7 @@
 [[ ! -x $1 ]] && >&2 echo Shouldn\'t \"$1\" be executable? && exit 4
 
 # TODO: if line has 4 leading spaces apply sh highlight ansi
-awk -v PROG="$(basename $1)" '
+awk -v PROG="$(basename $1)" -v NO_ANSI="$2" '
 
 BEGIN {
     "tput sgr 0"   | getline color_seq["reset"]
@@ -135,6 +135,9 @@ function to_header_line(str) {
 # @return         terminal color sequence followed by strin, treminated by reset color sequence
 #
 function color(str, color_k) {
+    if (NO_ANSI) {
+        return str
+    }
     return sprintf("%s", color_seq[color_k] str color_seq["reset"])
 }
 

@@ -1,6 +1,4 @@
 #!/bin/bash
-source zbx-script-header
-[[ $# -ne 2 ]] && $0 -h && exit 1
 ### Usage: $0 <zref?> [FLAGS..]
 ## Check translation strings.
 ## Script must be run from within git repo.
@@ -10,16 +8,16 @@ source zbx-script-header
 ##
 ## Examples:
 ##    * Last commit checked.
-##    $~ check-strings $(git rev-parse HEAD^) $(git rev-parse HEAD)
+##    \$~ check-strings \$(git rev-parse HEAD^) \$(git rev-parse HEAD)
 ##
 ##    * Any commit checked, by revrapsing it's parent.
-##    $~ check-strings $(git rev-parse <sha>^) <sha>
+##    \$~ check-strings \$(git rev-parse <sha>^) <sha
 ##    
 ##    * Changes in this branch
-##    $~ check-strings $(git rev-parse <sha>^) <sha>
-##
-## Known issues:
-##    * If you have merged an "updated to latest from .." you will get inherited changes
+##    \$~ check-strings \$(git rev-parse <sha>^) <sha
+##~
+source zbx-script-header
+[[ $# -ne 2 ]] && $0 -h && exit 1
 
 git rev-parse $@ 1> /dev/null || exit 2
 
