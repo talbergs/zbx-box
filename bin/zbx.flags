@@ -11,7 +11,7 @@
 ##         $0 <(git diff HEAD^..HEAD --stat)
 ##         # Outputs something like "..F......."
 ## Example:
-##         git diff $(git merge-base master HEAD)..HEAD --stat | $0
+##         git diff \$(git merge-base master HEAD)..HEAD --stat | $0
 ##         # Get all the flags touched in this feature.
 ## Example:
 ##         $0 --

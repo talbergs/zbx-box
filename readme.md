@@ -4,26 +4,25 @@ How-to:
 - git clone this
 - add `<this-repo>/bin` to your $PATH
 - `cp <this-repo>/env.example <this-repo>/.env`, then adjust environment variables
-- ensure services are up `zbx,box -U`
+- ensure services are up `zbx,box caddy php72-fpm`
 - work on `zbx,dev <branch-basename>`
 
 Checkpoints:
 - [ ] Developer dashboard (overview and links)
-- [x] containerized (all you need is a docker, terminal and browser)
+- [x] containerized
 - [x] postgresql
 - [ ] oracle
 - [ ] mariadb
 - [x] git hooks
-- [x] multiple zabbix servers (same port different TLD)
+- [x] multiple zabbix servers
 - [x] self signed ssl
-- [x] php 5.4
-- [x] php 7.4
+- [x] php 5.4  & php 7.2 & php 7.4 (subdomain switch)
 - [ ] jira API integration (issue description)
-- [x] emails (mailhog-view)
+- [ ] emails (mailhog-view)
 - [x] http/2
 - [ ] traefik (rewrite /frontends/php and more ..)
-- [x] xdebug (also used as profiler) + ui tool (php 5.4 only)
-- [x] symfony vardumper (for terminal view also)
+- [ ] xdebug (also used as profiler) + ui tool (php 5.4 only)
+- [ ] symfony vardumper (for terminal view also)
 - [x] dev scripts
 - [ ] debug level logs for all containers
 - [x] opcache + opcache-gui
@@ -225,7 +224,7 @@ Usage #2: echo [FILE..] | zbx.flags
 ~          zbx.flags <(git diff HEAD^..HEAD --stat)
 ~          # Outputs something like ..F.......
 ~  Example:
-~          git diff d5c6eda5f09aa2c2becb285cd8c6de439e4a2f24..HEAD --stat | zbx.flags
+~          git diff $(git merge-base master HEAD)..HEAD --stat | zbx.flags
 ~          # Get all the flags touched in this feature.
 ~  Example:
 ~          zbx.flags --
