@@ -225,7 +225,7 @@ Usage #2: echo [FILE..] | zbx.flags
 ~          zbx.flags <(git diff HEAD^..HEAD --stat)
 ~          # Outputs something like ..F.......
 ~  Example:
-~          git diff 2fe8e74582d88b6f8056cca379ea27ea8afbef7a..HEAD --stat | zbx.flags
+~          git diff d5c6eda5f09aa2c2becb285cd8c6de439e4a2f24..HEAD --stat | zbx.flags
 ~          # Get all the flags touched in this feature.
 ~  Example:
 ~          zbx.flags --
@@ -255,7 +255,7 @@ Usage: zbx,generate <zref?>
 
 ```
 Usage: zbx,jira <zref?> [FLAG?]
-~  Shorthand to open jira ticker in browser.
+~  Shorthand to open jira ticket in browser.
 ~  Example:
 ~          zbx,jira .
 ~          # This will open fuzzy finder to select one of available workspaces,

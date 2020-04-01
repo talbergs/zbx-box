@@ -1,6 +1,6 @@
 #!/bin/bash
 ### Usage: $0 <zref?> [FLAG?]
-## Shorthand to open jira ticker in browser.
+## Shorthand to open jira ticket in browser.
 ## Example:
 ##         $0 .
 ##         # This will open fuzzy finder to select one of available workspaces,
