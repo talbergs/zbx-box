@@ -34,10 +34,22 @@ vim(){
     nl $file | zbx-util-color -H "$file"
 }
 
-server(){
+server-postgres(){
     file=$WORKTREE/$REF/zabbix_server.conf
-    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DREF=$DREF > $file
-    nl $file | zbx-util-color -H "$file"
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=zabbix DBUSER=postgres DBNAME=$REF > $file
+    nl $file | zbx-util-color -H "(postgres) $file"
+}
+
+server-oracle-19c(){
+    file=$WORKTREE/$REF/zabbix_server.conf
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=$REF DBUSER=$REF DBNAME=INDIA > $file
+    nl $file | zbx-util-color -H "(oracle-19c) $file"
+}
+
+server-oracle-11g(){
+    file=$WORKTREE/$REF/zabbix_server.conf
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=$REF DBUSER=$REF DBNAME=XE > $file
+    nl $file | zbx-util-color -H "(oracle-11g) $file"
 }
 
 agentd(){
@@ -48,16 +60,21 @@ agentd(){
 
 ex=()
 if [ $# -eq 0 ]; then
-    ex=(agentd server vim frontend)
+    ex=(agentd server-postgres vim frontend)
 fi
 
+# TODO: must accept -D <variant> (defaults to postgres) to configure for oracle or maria
 while [[ $# > 0 ]];do case $1 in
     #- Write vimrc only.
     -V | --vim ) ex+=(vim) ;;
     #- Write agentd config only.
     -A | --agentd ) ex+=(agentd) ;;
-    #- Write server config only.
-    -S | --server ) ex+=(server) ;;
+    #- Write server config for postgres.
+    -Sp| --server-postgres ) ex+=(server-postgres) ;;
+    #- Write server config for oracle 19c.
+    -So| --server-oracle-19c ) ex+=(server-oracle-19c) ;;
+    #- Write server config for oracle 11g.
+    -Sc| --server-oracle-11g ) ex+=(server-oracle-11g) ;;
     #- Write frontend config only.
     -F | --frontend ) ex+=(frontend) ;;
 esac;shift;done

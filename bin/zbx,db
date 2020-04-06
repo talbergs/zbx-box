@@ -70,9 +70,91 @@ mariadb() {
     fi
 }
 
-oracle() {
-    >&2 echo "TODO: Not implemeted!"
-    exit 100
+oracle-11g() {
+    sqls=/var/www/html/$REF/database/oracle
+    sql="
+        ALTER SYSTEM SET DB_CREATE_FILE_DEST=\"/tmp\";
+        SHOW PARAMETER DB_CREATE_FILE_DEST;
+        DROP USER \"$DBNAME\" CASCADE;
+        DROP TABLESPACE \"$DBNAME\" INCLUDING CONTENTS AND DATAFILES;
+        CREATE TABLESPACE \"$DBNAME\" DATAFILE '$DBNAME.dat' SIZE 40M ONLINE;
+        ALTER DATABASE DATAFILE '$DBNAME.dat' AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+        CREATE USER \"$DBNAME\" IDENTIFIED BY \"$DBNAME\" DEFAULT TABLESPACE \"$DBNAME\" TEMPORARY TABLESPACE TEMP;
+        GRANT ALL PRIVILEGES TO \"$DBNAME\";
+        GRANT CONNECT TO \"$DBNAME\";
+        CONNECT \"$DBNAME\"/\"$DBNAME\"@XE;
+        SELECT table_name FROM all_tables WHERE tablespace_name='$DBNAME';
+        WHENEVER SQLERROR EXIT 5;
+        WHENEVER OSERROR EXIT 10;
+        @$sqls/schema-patched.sql $DBNAME;
+        @$sqls/images-patched.sql $DBNAME;
+        @$sqls/data-patched.sql $DBNAME;
+        SELECT table_name FROM all_tables WHERE tablespace_name='$DBNAME';
+        EXIT;
+    "
+
+    echo "$sql" > $WORKTREE/$REF/database/oracle/refresh-11g.sql
+
+    sed -e 's/nvarchar2(2048)/nvarchar2(2000)/g' -e "s/\sscript\s.*\$/script nclob DEFAULT '' ,/g" $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
+    sed "1s|'.*'|'/var/www/html/$REF/misc/images'|" $WORKTREE/$REF/database/oracle/images.sql > $WORKTREE/$REF/database/oracle/images-patched.sql
+
+    case "$(zbx,version $REF --major)" in
+        5.0 | 4.4)
+            sed '/^INSERT INTO media_type/,+3d' $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+        ;;
+        * | 4.2 | 4.0 | 3.4 | 3.2 | 3.0 )
+            cat $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+        ;;
+    esac
+
+    docker exec zbx-box-oracle-11g bash -c "echo 'EXIT;' | sqlplus -s 'system/zabbix@XE' @/var/www/html/$REF/database/oracle/refresh-11g.sql"
+    # docker exec zbx-box-oracle-11g bash -c "/var/www/html/sqlcl/bin/sql 'system/zabbix@XE' @/var/www/html/$REF/database/oracle/refresh.sql"
+}
+
+oracle-19c() {
+    sqls=/var/www/html/$REF/database/oracle
+    sql="
+        ALTER SYSTEM SET DB_CREATE_FILE_DEST=\"/tmp\";
+        SHOW PARAMETER DB_CREATE_FILE_DEST;
+        ALTER SESSION SET \"_ORACLE_SCRIPT\"=true;
+        COMMIT;
+        DROP USER \"$DBNAME\" CASCADE;
+        DROP TABLESPACE \"$DBNAME\" INCLUDING CONTENTS AND DATAFILES;
+        CREATE TABLESPACE \"$DBNAME\" DATAFILE '$DBNAME.dat' SIZE 40M ONLINE;
+        ALTER DATABASE DATAFILE '$DBNAME.dat' AUTOEXTEND ON NEXT 10M MAXSIZE UNLIMITED;
+        CREATE USER \"$DBNAME\" IDENTIFIED BY \"$DBNAME\" DEFAULT TABLESPACE \"$DBNAME\" TEMPORARY TABLESPACE TEMP;
+        GRANT ALL PRIVILEGES TO \"$DBNAME\";
+        GRANT CONNECT TO \"$DBNAME\";
+        CONNECT \"$DBNAME\"/\"$DBNAME\";
+        SELECT table_name FROM all_tables WHERE tablespace_name='$DBNAME';
+        WHENEVER SQLERROR EXIT 5;
+        WHENEVER OSERROR EXIT 10;
+        @$sqls/schema-patched.sql $DBNAME;
+        @$sqls/images-patched.sql $DBNAME;
+        @$sqls/data-patched.sql $DBNAME;
+        SELECT table_name FROM all_tables WHERE tablespace_name='$DBNAME';
+        EXIT;
+    "
+
+    echo "$sql" > $WORKTREE/$REF/database/oracle/refresh.sql
+
+    # https://stackoverflow.com/a/25452936/2644170 # nvarchar2
+    # https://support.zabbix.com/browse/ZBXNEXT-5335
+    sed 's/nvarchar2(2048)/nvarchar2(2000)/g' $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
+    sed "1s|'.*'|'/var/www/html/$REF/misc/images'|" $WORKTREE/$REF/database/oracle/images.sql > $WORKTREE/$REF/database/oracle/images-patched.sql
+
+    case "$(zbx,version $REF --major)" in
+        5.0 | 4.4)
+            # https://support.zabbix.com/browse/ZBX-17512
+            sed '/^INSERT INTO media_type/,+3d' $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+        ;;
+        * | 4.2 | 4.0 | 3.4 | 3.2 | 3.0 )
+            cat $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+        ;;
+    esac
+
+    docker exec zbx-box-oracle-19c bash -c "echo 'EXIT;' | sqlplus -s '/ as sysdba' @/var/www/html/$REF/database/oracle/refresh.sql"
+    # docker exec zbx-box-oracle-19c bash -c "/var/www/html/sqlcl/bin/sql '/ as sysdba' @/var/www/html/$REF/database/oracle/refresh.sql"
 }
 
 postgres-query() {
@@ -88,8 +170,10 @@ while [[ $# > 0 ]];do case $1 in
     # TODO: some issues here still to fix..
     #- <{WIP}> Apply database to mariadb service.
     -M | --mariadb ) ex_dbs+=(mariadb) ;;
-    #- <{WIP}> Apply database to mariadb service.
-    -O | --oracle ) ex_dbs+=(oracle) ;;
+    #- Apply database to oracle-19c (new) service.
+    -On| --oracle-19c ) ex_dbs+=(oracle-19c) ;;
+    #- Apply database to oracle-11g (old) service.
+    -Oo| --oracle-11g ) ex_dbs+=(oracle-11g) ;;
     #- Apply "api_json" data set.
     -A | --api-json ) apijson=1 ;;
     #- Apply "selenium" data set.
@@ -98,7 +182,7 @@ while [[ $# > 0 ]];do case $1 in
     -N | --named ) shift; affix=$1 ;;
 esac;shift;done
 
-DBNAME="${REF}${affix}"
+DBNAME=$(basename ${REF}${affix})
 for ex_db in ${ex_dbs[*]}; do
     $ex_db
 done

@@ -11,7 +11,7 @@ Checkpoints:
 - [ ] Developer dashboard (overview and links)
 - [x] containerized
 - [x] postgresql
-- [ ] oracle
+- [x] oracle
 - [ ] mariadb
 - [x] git hooks
 - [x] multiple zabbix servers
@@ -145,10 +145,12 @@ Usage: zbx+config <zref?> [FLAG?..]
 ~  Example:
 ~          zbx+config 4.0 --vim --server
 ~          # Apply specific configs only for workspace release/4.0
- -V --vim       Write vimrc only.
- -A --agentd    Write agentd config only.
- -S --server    Write server config only.
- -F --frontend  Write frontend config only.
+ -V  --vim                Write vimrc only.
+ -A  --agentd             Write agentd config only.
+ -Sp --server-postgres    Write server config for postgres.
+ -So --server-oracle-19c  Write server config for oracle 19c.
+ -Sc --server-oracle-11g  Write server config for oracle 11g.
+ -F  --frontend           Write frontend config only.
 ```
 </details>
 <details>
@@ -179,7 +181,8 @@ Usage: zbx,db <zref?> [FLAGS..]
  -P  --postgres                 Apply database to postgres service.
  -Pq --postgres-query           Quick open repl (use current database).
  -M  --mariadb         {WIP}    Apply database to mariadb service.
- -O  --oracle          {WIP}    Apply database to mariadb service.
+ -On --oracle-19c               Apply database to oracle-19c (new) service.
+ -Oo --oracle-11g               Apply database to oracle-11g (old) service.
  -A  --api-json                 Apply api_json data set.
  -S  --selenium                 Apply selenium data set.
  -N  --named           [a-z\-_] Add affix to database name
@@ -206,6 +209,7 @@ Usage: zbx,dev <zref?>
 ~          # Chosen branch is added to worktree and upstream is set.
 ~  Optionally worktree path is put into z jump-path helper (see .env).
 ~ ~
+ -N --no-push  Workspace setup as usual - except new brach will NOT be pushed!
 ```
 </details>
 <details>
@@ -325,12 +329,12 @@ Usage: zbx,run
 ~          zbx,run . -S
 ~          # Same as above, but offer menu with available workspaces.
 ~ ~
- -S  --server       Run server.
- -A  --agent        Run agent.
- -Sx --stop-server  Run server.
- -Ax --stop-agent   Stop agent.
- -F  --foreground   Do not detach and block (Ctrl+Z do detach and Ctrl+C to exit). Server logs are still always sent 
-                    to containers standard output.
+ -S  --server         Run server.
+ -So --server-oracle  Run server (oracle)
+ -A  --agent          Run agent.
+ -Sx --stop-server    Run server.
+ -Ax --stop-agent     Stop agent.
+ -F  --foreground     Do not detach and block (Ctrl+Z do detach and Ctrl+C to exit). Server logs are still always sent to containers standard output.
 ```
 </details>
 <details>
@@ -375,8 +379,7 @@ Usage: zbx,string-changes <zref?> [FLAGS..]
 ```
 Usage: program 2>&1 | zbx-util-color [ARGS..]
 ~  Outputs program STDOUT to file in tmp and shows preview only.
- -P --preview-size  If this flag is given STDIN strem will be shown in preview box. Complete output will be then 
-                    placed in tmp file. Optionally accepts positive number of lines to show. Defaults to 5.
+ -P --preview-size  If this flag is given STDIN strem will be shown in preview box. Complete output will be then placed in tmp file. Optionally accepts positive number of lines to show. Defaults to 5.
  -H --header        Print current stream header. Accepts a string as argument.
  -E --error         Use error mode - as if STDERR was piped into this.
 ```

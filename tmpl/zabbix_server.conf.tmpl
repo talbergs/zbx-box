@@ -1,8 +1,8 @@
 LogFile=/var/www/html/{{ $REF }}/dist/zabbix_server.log
 DBHost=zbx-box-postgres
-DBName={{ $REF }}
-DBUser=postgres
-DBPassword=zabbix
+DBName={{ $DBNAME }}
+DBUser={{ $DBUSER }}
+DBPassword={{ $DBPASS }}
 LogSlowQueries=200
 Timeout=4
 CacheSize=512M

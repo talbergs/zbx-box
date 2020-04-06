@@ -66,6 +66,11 @@ php_fastcgi @php72 zbx-box-php72-fpm:9000
 }
 php_fastcgi @php74 zbx-box-php74-fpm:9000
 
+@php74oci {
+    host 74oci.*
+}
+php_fastcgi @php74oci zbx-box-php74-fpm-oracle:9000
+
 @php54 {
     host 54.*
 }

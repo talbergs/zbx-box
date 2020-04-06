@@ -57,8 +57,25 @@ build_server_mysql() {
 }
 
 build_server_oracle() {
-    >&2 echo "TODO: Not implemeted!"
-    exit 100
+    cmd='
+        ./bootstrap.sh
+        && ./configure
+            -q
+            --enable-server
+            --with-oracle-include=/usr/include/oracle/19.6/client
+            --with-oracle-lib=/usr/lib/oracle/19.6/client/lib
+            --prefix="$PWD/dist"
+        && make
+        && make install
+    '
+
+    zbx-compose builder-oracle \
+        --rm \
+        --cpus 8 \
+        --memory-swappiness 0 \
+        --workdir /var/www/html/$REF \
+        -- "$cmd" \
+    | zbx-util-color -H "Building server '$REF' (type: oracle) .."
 }
 
 build_server() {

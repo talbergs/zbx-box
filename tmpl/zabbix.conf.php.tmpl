@@ -14,12 +14,21 @@ $IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
 /* // mariadb override */
 /* $DB['TYPE'] = 'MYSQL'; */
 /* $DB['SERVER'] = 'zbx-box-mariadb'; */
-/* $DB['USER'] = 'root' */;
+/* $DB['USER'] = 'root'; */
 
-/* // oracle override */
+/* // oracle 11g override */
 /* $DB['TYPE'] = 'ORACLE'; */
-/* $DB['SERVER'] = 'zbx-box-oracle'; */
-/* $DB['USER'] = 'root' */;
+/* $DB['SERVER'] = 'zbx-box-oracle-11g'; */
+/* $DB['USER'] = '{{ $DREF }}'; */
+/* $DB['PASSWORD'] = '{{ $DREF }}'; */
+/* $DB['DATABASE'] = 'XE'; */
+
+/* // oracle 19c override */
+/* $DB['TYPE'] = 'ORACLE'; */
+/* $DB['SERVER'] = 'zbx-box-oracle-19c'; */
+/* $DB['USER'] = '{{ $DREF }}'; */
+/* $DB['PASSWORD'] = '{{ $DREF }}'; */
+/* $DB['DATABASE'] = 'INDIA'; */
 
 $ZBX_SERVER_NAME = '{{ $DREF }} '.$DB["TYPE"];
 

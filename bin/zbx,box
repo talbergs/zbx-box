@@ -32,27 +32,25 @@ compose-service() {
 
     name=$1
     case $name in
-        php54-fpm | php72-fpm | php74-fpm)
+        php54-fpm | php72-fpm | php74-fpm | php74-fpm-oracle)
             zbx-compose $name \
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/zabbix.php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
                 --volume "$ZBX_BOX_ROOT"/decoration:/decoration
         ;;
-        oracle)
+        oracle-*)
+            zbx-util-color -H "It takes 3 minutes to start, watch container logs for string 'DATABASE IS READY TO USE!' to appear."
+            zbx-util-color -H ".. Also no database persistance will be preserved. If service stop, all data will be lost."
             zbx-compose $name \
-                --volume $ZBX_BOX_ROOT/.persist/$name:/opt/oracle/oradata \
                 --cpus 8 \
-                --memory-swappiness 0 \
-                --shm-size=2g \
                 -p 1521:1521 \
                 -p 5500:5500 \
                 -p 8001:8080 \
+                --shm-size=4g \
                 --rm
         ;;
         postgres)
-            # TODO: make system volumes instead of implicit bind
-            # TODO: maybe service may have manifest file stating what volumes if any it has to see size
             zbx-compose $name \
-                --volume "$ZBX_BOX_ROOT"/.persist/postgres:/var/lib/postgresql/data
+                --volume zbx-box-db-oracle:/var/lib/postgresql/data
         ;;
         caddy)
             zbx-compose $name \
