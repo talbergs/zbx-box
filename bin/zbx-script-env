@@ -25,6 +25,10 @@ mkdir -p $WORKTREE/{master,{feature,release}}
 # TODO bake these things: webgrind, opcache-gui, into dashboard
 [ ! -f "$WORKTREE/opcache-gui.php" ] && \
     wget https://raw.githubusercontent.com/amnuts/opcache-gui/master/index.php -O $WORKTREE/opcache-gui.php
+
+[ ! -f "$WORKTREE/adminer-4.7.6.php" ] && \
+    wget https://github.com/vrana/adminer/releases/download/v4.7.6/adminer-4.7.6.php -O $WORKTREE/adminer-4.7.6.php
+
 [ ! -f "$WORKTREE/phpinfo.php" ] && echo '<?php phpinfo();' > "$WORKTREE/phpinfo.php"
 
 export ZBX_ENV_SOURCED=1
@@ -52,17 +56,9 @@ ls-remote() {
 
 export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^branch' | sed 's#^.*heads/##')
 
-# TODO: use labels, add more volumes for database invariants. Fix permissions.
+# TODO: use labels.
 [ -z "$(docker network ls -f name='^zbx-box$' -q)" ] && docker network create zbx-box \
     | zbx-util-color -H "docker network create zbx-box"
-
-[ -z "$(docker volume ls -f name='^zbx-box-data$' -q)" ] && docker volume create \
-    --driver local \
-    --opt type=none \
-    --opt device=$ZBX_BOX_ROOT/data \
-    --opt o=bind \
-    --name zbx-box-data \
-    | zbx-util-color -H "docker volume create zbx-box-data (device=$ZBX_BOX_ROOT/data)"
 
 [ -z "$(docker volume ls -f name='^zbx-box$' -q)" ] && docker volume create \
     --driver local \
@@ -70,4 +66,13 @@ export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^b
     --opt device=$WORKTREE \
     --opt o=bind \
     --name zbx-box \
-    | zbx-util-color -H "docker volume create zbx-box-data (device=$WORKTREE)"
+    | zbx-util-color -H "docker volume create zbx-box (device=$WORKTREE)"
+
+[ -z "$(docker volume ls -f name='^zbx-box-db-oracle$' -q)" ] && docker volume create zbx-box-db-oracle \
+    | zbx-util-color -H "docker volume create zbx-box-db-oracle"
+
+[ -z "$(docker volume ls -f name='^zbx-box-db-postgres$' -q)" ] && docker volume create zbx-box-db-postgres \
+    | zbx-util-color -H "docker volume create zbx-box-db-postgres"
+
+# Fixin docker permissions to write (needed for linux only)
+sudo chmod -R o+rw $WORKTREE

@@ -80,6 +80,11 @@ ex=()
 while [[ $# > 0 ]];do case $1 in
     #- Run server.
     -S | --server ) ex+=(run-server) ;;
+    #- Run server (oracle)
+    -So| --server-oracle )
+        builder_img="$(zbx-image-id builder-oracle)"
+        ex+=(run-server)
+    ;;
     #- Run agent.
     -A | --agent ) ex+=(run-agent) ;;
     #- Run server.

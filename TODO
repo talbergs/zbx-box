@@ -3,15 +3,7 @@
 
 - ,,box - it can start stopped container if found
 
-
-# server/agent
-- zbx,run server just block foreground and give all the logs
-- zbx,run agent just block foreground and give all the logs
-
-# TODO: automate documentation to be extract from scripts into markdown.
 # TODO: automate todo list to be extracted.
-
-!! postgres db persistance
 
 -= STREAMLINE =-
 !! zbx,db -P (should offer to build schemas if needed), else zbx,make -D and zbx,db -P had to be rerun
@@ -27,3 +19,5 @@ remove worktree dir, db and
 
 pg_restore --clean -Upostgres -d zabbix ./zbx-16162.backup
 TODO: pg_restore fails if db export user is "zabbix"
+
+# TODO: maybe service may have manifest file stating what volumes if any it has to see size.

@@ -18,11 +18,20 @@
 ##~
 source zbx-script-header
 
+for i in $@;do case $i in
+    #- Workspace setup as usual - except new brach will NOT be pushed!
+    -N | --no-push) nopush=1 ;;
+esac;done
+
+# TODO: it creates based on local ref - might add a switch to choose to fetch more recent base version during "create"
 create-feature(){
     cd "$WORKTREE/master"
     git worktree add --no-track -f -b "$1" "$WORKTREE/$1" "$2"
     cd $WORKTREE/$1
-    git push origin HEAD
+
+    if [ -z $nopush ]; then
+        git push origin HEAD
+    fi
 
     return $?
 }

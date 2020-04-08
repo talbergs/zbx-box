@@ -44,5 +44,5 @@ RUN apk add --update --no-cache \
       docker-php-ext-install ldap && \
       apk del .docker-php-ldap-dependancies
 
-# TODO: remove this
+# Openbsd netcat for zbx,follow
 RUN apk --no-cache add netcat-openbsd

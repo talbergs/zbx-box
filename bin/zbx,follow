@@ -1,5 +1,61 @@
 #!/bin/bash
+### Usage: $0 [SERVICE?..]
+## Used to combine and tail output of multiple services.
+## By default connects to symphony var dumper (cli).
+## Example:
+##         $0
+##         # Determine workspace and attach tty to symphony var dumper.
+##         # If ref not determined - script fails.
+## Example:
+##         $0 .
+##         # Gives multiselect menu to select services and tail them output.
+## Example:
+##         $0 php74-fpm-oracle
+##         # Attaches to this service and tail (using container name).
+##~
 source zbx-script-header
-source zbx-get-ref
-    
-zbx-compose builder -it --rm -- nc -lkU /var/www/html/debug.sock
+
+symphony() {
+    tailers=($(docker ps -q --filter name='^zbx-box-php7.-fpm$'))
+    if [ -z $tailers ];then
+        >&2 echo at least one of php74 or php72 services must be running
+        exit 22
+    fi
+    name=$(docker inspect --format '{{.Name}}' "${tailers[0]}")
+    zbx-util-color -H "Using service '$name'"
+
+    # TODO: permission issue
+    docker exec -it --user $(id -u):$(id -g) "${tailers[0]}" nc -lkU /var/www/html/$REF/frontends/php/debug.sock
+}
+
+logs=()
+stop-logs() {
+    for log in ${logs[*]};do
+        kill -9 $log
+    done
+}
+
+# TODO prefix each line with colored sevice name
+container-logs() {
+    trap stop-logs SIGINT
+    while read c; do
+        docker logs -f $c &
+        logs+=($!)
+    done
+    wait ${logs[*]}
+}
+
+if [ -z $1 ]; then
+    source zbx-get-ref
+    zbx-util-color -H "Starting symphony var dumper in '$REF'.."
+    symphony
+else
+    if [ $1 = '.' ];then
+        docker ps --format '{{.Names}}: ({{.ID}})' \
+            | fzf --header $0 --multi \
+            | sed 's/.*(\(.*\))$/\1/' \
+            | container-logs
+    else
+        container-logs <<< $(echo ${@} | xargs -n1)
+    fi
+fi

@@ -42,7 +42,8 @@ function t() {
     static $cloner;
 
     if (!$sock) {
-        $path = 'unix:///tmp/debug.sock';
+        $path = 'unix:///var/www/html' . dirname($_SERVER['PHP_SELF']) . '/debug.sock';
+        $path = '/dev/stdout';
         $sock = stream_socket_client($path, $errno, $errstr);
     }
 
@@ -73,19 +74,13 @@ function t() {
 }
 
 /**
- * use openbsd-netcat to monitor the debug
- *
- * nc -lkU ./debug.sock
+ * Presentable html file dump local to request entry.
  */
 function f() {
-    static $sock;
     static $dumper;
     static $cloner;
 
-    if (!$sock) {
-        $path = '/var/www/html/';
-        /* $sock = stream_socket_client($path, $errno, $errstr); */
-    }
+    $path = '/var/www/html' . dirname($_SERVER['PHP_SELF']);
 
     if (!$dumper) {
         $dumper = new HtmlDumper();
@@ -96,20 +91,13 @@ function f() {
     }
 
     extract(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)[0]);
-    /* $file = substr($file, strpos($file, '/php/') + 5); */
-    /* fwrite($sock, sprintf("\033[4m\033[31m\033[1m> %s:%d \033[0m\n", $file, $line)); */
 
     $args = func_get_args();
     if (!$args) {
-        /* $dumper->setColors(false); */
-        /* fwrite($sock, chr(10).'$_REQUEST '.date('Y-m-d H:i:s').PHP_EOL); */
-        /* $dumper->dump($cloner->cloneVar($_REQUEST), $sock); */
-        /* fwrite($sock, '--/req--'.PHP_EOL); */
-            $dumper->dump($cloner->cloneVar($var), $path.'debug.html');
+        $dumper->dump($cloner->cloneVar($var), $path.'/debug.html');
     } else {
-        /* $dumper->setColors(true); */
         foreach($args as $var) {
-            $dumper->dump($cloner->cloneVar($var), $path.'debug.html');
+            $dumper->dump($cloner->cloneVar($var), $path.'/debug.html');
         }
     }
 }

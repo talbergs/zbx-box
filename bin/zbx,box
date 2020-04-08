@@ -37,7 +37,7 @@ compose-service() {
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/zabbix.php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
                 --volume "$ZBX_BOX_ROOT"/decoration:/decoration
         ;;
-        oracle-*)
+        oracle-11g)
             zbx-util-color -H "It takes 3 minutes to start, watch container logs for string 'DATABASE IS READY TO USE!' to appear."
             zbx-util-color -H ".. Also no database persistance will be preserved. If service stop, all data will be lost."
             zbx-compose $name \
@@ -45,6 +45,17 @@ compose-service() {
                 -p 1521:1521 \
                 -p 5500:5500 \
                 -p 8001:8080 \
+                --shm-size=4g \
+                --rm
+        ;;
+        oracle-19c)
+            zbx-util-color -H "It takes 3 minutes to start, watch container logs for string 'DATABASE IS READY TO USE!' to appear."
+            zbx-util-color -H ".. Also no database persistance will be preserved. If service stop, all data will be lost."
+            zbx-compose $name \
+                --cpus 8 \
+                -p 1522:1521 \
+                -p 5501:5500 \
+                -p 8002:8080 \
                 --shm-size=4g \
                 --rm
         ;;

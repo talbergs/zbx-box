@@ -37,7 +37,7 @@ URL="https://${MIN_REQ_PHP_VERSION_SUBDOMAIN}.${WEBTLD%/}/$(basename $REF)/"
 
 if [ -z $dry_run ];then
     echo $URL
-    $BROWSER "$URL" &> /dev/null
+    $BROWSER "$URL" &
 else
     echo -n $URL
 fi

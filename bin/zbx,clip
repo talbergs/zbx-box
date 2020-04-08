@@ -23,8 +23,7 @@ CLIPS+=("*(1)* No translation string changes.")
 
 cd $WORKTREE/$REF
 
-# we use first 9 digits of sha
-SHA="$(git rev-parse HEAD | head -c 9)"
+SHA="$(git rev-parse HEAD | head -c 11)"
 
 MASTER_VERSION="$(cd $WORKTREE/master && zbx,version --major)"
 CURRENT_VERSION="$(zbx,version --major)"

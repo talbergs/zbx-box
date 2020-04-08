@@ -157,6 +157,14 @@ oracle-19c() {
     # docker exec zbx-box-oracle-19c bash -c "/var/www/html/sqlcl/bin/sql '/ as sysdba' @/var/www/html/$REF/database/oracle/refresh.sql"
 }
 
+oracle-19c-query() {
+    docker exec -it zbx-box-oracle-11g sqlplus "$DBNAME/$DBNAME@XE"
+}
+
+oracle-11g-query() {
+    docker exec -it zbx-box-oracle-19c sqlplus "$DBNAME/$DBNAME@INDIA"
+}
+
 postgres-query() {
     docker exec -it zbx-box-postgres psql -q -U postgres -d "$DBNAME"
 }
@@ -164,22 +172,26 @@ postgres-query() {
 ex_dbs=()
 while [[ $# > 0 ]];do case $1 in
     #- Apply database to postgres service.
-    -P | --postgres ) ex_dbs+=(postgres) ;;
+    -P  | --postgres ) ex_dbs+=(postgres) ;;
     #- Quick open repl (use current database).
-    -Pq| --postgres-query ) ex_dbs+=(postgres-query) ;;
+    -Pq | --postgres-query ) ex_dbs+=(postgres-query) ;;
     # TODO: some issues here still to fix..
     #- <{WIP}> Apply database to mariadb service.
-    -M | --mariadb ) ex_dbs+=(mariadb) ;;
+    -M  | --mariadb ) ex_dbs+=(mariadb) ;;
     #- Apply database to oracle-19c (new) service.
-    -On| --oracle-19c ) ex_dbs+=(oracle-19c) ;;
+    -On | --oracle-19c ) ex_dbs+=(oracle-19c) ;;
     #- Apply database to oracle-11g (old) service.
-    -Oo| --oracle-11g ) ex_dbs+=(oracle-11g) ;;
+    -Oo | --oracle-11g ) ex_dbs+=(oracle-11g) ;;
+    #- Quick open repl (use current database).
+    -Onq| --oracle-19c-query ) ex_dbs+=(oracle-19c-query) ;;
+    #- Quick open repl (use current database).
+    -Ooq| --oracle-11g-query ) ex_dbs+=(oracle-11g-query) ;;
     #- Apply "api_json" data set.
-    -A | --api-json ) apijson=1 ;;
+    -A  | --api-json ) apijson=1 ;;
     #- Apply "selenium" data set.
-    -S | --selenium ) selenium=1 ;;
+    -S  | --selenium ) selenium=1 ;;
     #- <[a-z\-_]> Add affix to database name
-    -N | --named ) shift; affix=$1 ;;
+    -N  | --named ) shift; affix=$1 ;;
 esac;shift;done
 
 DBNAME=$(basename ${REF}${affix})

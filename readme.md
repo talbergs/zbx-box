@@ -178,14 +178,16 @@ Usage: zbx,db <zref?> [FLAGS..]
 ~          # Note: all swithces are applied in order they are passed to command.
 ~          # First is created postgres db, then mariadb, both got selenium topping.
 ~ ~
- -P  --postgres                 Apply database to postgres service.
- -Pq --postgres-query           Quick open repl (use current database).
- -M  --mariadb         {WIP}    Apply database to mariadb service.
- -On --oracle-19c               Apply database to oracle-19c (new) service.
- -Oo --oracle-11g               Apply database to oracle-11g (old) service.
- -A  --api-json                 Apply api_json data set.
- -S  --selenium                 Apply selenium data set.
- -N  --named           [a-z\-_] Add affix to database name
+ -P   --postgres                   Apply database to postgres service.
+ -Pq  --postgres-query             Quick open repl (use current database).
+ -M   --mariadb           {WIP}    Apply database to mariadb service.
+ -On  --oracle-19c                 Apply database to oracle-19c (new) service.
+ -Oo  --oracle-11g                 Apply database to oracle-11g (old) service.
+ -Onq --oracle-19c-query           Quick open repl (use current database).
+ -Ooq --oracle-11g-query           Quick open repl (use current database).
+ -A   --api-json                   Apply api_json data set.
+ -S   --selenium                   Apply selenium data set.
+ -N   --named             [a-z\-_] Add affix to database name
 ```
 </details>
 <details>
@@ -240,7 +242,20 @@ Usage #2: echo [FILE..] | zbx.flags
 <summary>`zbx,follow`</summary>
 
 ```
-
+Usage: zbx,follow [SERVICE?..]
+~  Used to combine and tail output of multiple services.
+~  By default connects to symphony var dumper (cli).
+~  Example:
+~          zbx,follow
+~          # Determine workspace and attach tty to symphony var dumper.
+~          # If ref not determined - script fails.
+~  Example:
+~          zbx,follow .
+~          # Gives multiselect menu to select services and tail them output.
+~  Example:
+~          zbx,follow php74-fpm-oracle
+~          # Attaches to this service and tail (using container name).
+~ ~
 ```
 </details>
 <details>
