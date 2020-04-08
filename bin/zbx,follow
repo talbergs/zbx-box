@@ -35,11 +35,20 @@ stop-logs() {
     done
 }
 
-# TODO prefix each line with colored sevice name
+service-logs() {
+    # Not sure if this log file is rotated or not.
+    jfile=$(docker inspect --format '{{.LogPath}}' $1)
+    name=$(basename $(docker inspect --format '{{.Name}}' $1))
+    sudo tail -F $jfile \
+        | jq --unbuffered -Rr 'select(.) | fromjson | .log' \
+        | sed -u -e '/^$/d' -e "s/^/[$(tput setaf $2)${name}$(tput sgr0)] /"
+}
+
 container-logs() {
     trap stop-logs SIGINT
     while read c; do
-        docker logs -f $c &
+        (( i++ ))
+        service-logs $c $i &
         logs+=($!)
     done
     wait ${logs[*]}
