@@ -4,7 +4,7 @@
 bin-details() {
     bin=$(basename $1)
     printf '<details>\n<summary>`%s`</summary>\n\n```\n%s\n```\n</details>\n' \
-        $bin "$(zbx.-h $1 NO_ANSI)"
+        $bin "$(zbx.-h $1 NO_ANSI 100)"
 }
 
 update-marker() {

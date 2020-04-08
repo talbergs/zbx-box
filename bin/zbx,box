@@ -26,6 +26,11 @@ remove-image() {
         | zbx-util-color -H "Removing image for '$1'"
 }
 
+restart-service() {
+    zbx-util-color -H "Restarting '$1' .."
+    docker restart $(docker ps -q --filter name="$1")
+}
+
 compose-service() {
     # TODO: This deletes all stopped containers.
     docker container prune --filter="label=zbx-box" --force
@@ -79,6 +84,9 @@ compose-service() {
 
 actions=(compose-service)
 action_name="Spin up service"
+# action_name="Alt+[c,b,x,q,r,s]"
+# keybinds=("--bind" "alt-c:execute(echo {})'")
+# keybinds=("--expect" "alt-c,alt-x'")
 if [[ "$1" =~ ^-.* ]]; then
     case $1 in
         #- Lift up the service (will build image if neeed).
@@ -89,6 +97,10 @@ if [[ "$1" =~ ^-.* ]]; then
         -R | --rmi )
             action_name="Remove image"
             actions=(remove-image) ;;
+        #- Restart service.
+        -X | --restart )
+            action_name="Restart service"
+            actions=(restart-service) ;;
         #- Stop and remove container.
         -S | --stop )
             action_name="Stop and remove container"
@@ -108,7 +120,7 @@ if [[ $# > 0 ]];then
     services="${@}"
 else
     services=$(ls $ZBX_BOX_ROOT/build | fzf \
-        --multi \
+        --multi ${keybinds[*]} \
         --header "Action to apply: '$action_name'" \
         --prompt "$action_name >")
 fi

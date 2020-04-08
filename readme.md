@@ -96,6 +96,7 @@ Usage: zbx,box [FLAG?] [SERVICE?..]
 ~          # A menu will list all available services, the chosen ones will be removed.
  -C --compose  Lift up the service (will build image if neeed).
  -R --rmi      Remove image (all layers) for this this service.
+ -X --restart  Restart service.
  -S --stop     Stop and remove container.
  -B --build    Rebuild image for this service (using cache).
  -Q --devel    For testing -- teardown service -> build semage -> spin up
@@ -158,7 +159,8 @@ Usage: zbx+config <zref?> [FLAG?..]
 
 ```
 Usage: zbx,db <zref?> [FLAGS..]
-~  Feeds inital sql's into database (by default named same as $REF). They do need to be build first.
+~  Feeds inital sql's into database (by default named same as $REF). They do need to be build 
+~~ first.
 ~  For this do execute this:
 ~          zbx,make --database
 ~  If no shema.sql is found you will be prompted to agree to do this for you.
@@ -349,7 +351,8 @@ Usage: zbx,run
  -A  --agent          Run agent.
  -Sx --stop-server    Run server.
  -Ax --stop-agent     Stop agent.
- -F  --foreground     Do not detach and block (Ctrl+Z do detach and Ctrl+C to exit). Server logs are still always sent to containers standard output.
+ -F  --foreground     Do not detach and block (Ctrl+Z do detach and Ctrl+C to exit). Server logs 
+                      are still always sent to containers standard output.
 ```
 </details>
 <details>
@@ -394,7 +397,9 @@ Usage: zbx,string-changes <zref?> [FLAGS..]
 ```
 Usage: program 2>&1 | zbx-util-color [ARGS..]
 ~  Outputs program STDOUT to file in tmp and shows preview only.
- -P --preview-size  If this flag is given STDIN strem will be shown in preview box. Complete output will be then placed in tmp file. Optionally accepts positive number of lines to show. Defaults to 5.
+ -P --preview-size  If this flag is given STDIN strem will be shown in preview box. Complete output 
+                    will be then placed in tmp file. Optionally accepts positive number of lines to 
+                    show. Defaults to 5.
  -H --header        Print current stream header. Accepts a string as argument.
  -E --error         Use error mode - as if STDERR was piped into this.
 ```
