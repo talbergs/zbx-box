@@ -158,11 +158,11 @@ oracle-19c() {
 }
 
 oracle-19c-query() {
-    docker exec -it zbx-box-oracle-11g sqlplus "$DBNAME/$DBNAME@XE"
+    docker exec -it zbx-box-oracle-19c sqlplus "$DBNAME/$DBNAME@INDIA"
 }
 
 oracle-11g-query() {
-    docker exec -it zbx-box-oracle-19c sqlplus "$DBNAME/$DBNAME@INDIA"
+    docker exec -it zbx-box-oracle-11g sqlplus "$DBNAME/$DBNAME@XE"
 }
 
 postgres-query() {

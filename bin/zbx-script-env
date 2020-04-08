@@ -75,4 +75,4 @@ export LOCALREFS=$(cd $WORKTREE/master && git worktree list --porcelain | ag '^b
     | zbx-util-color -H "docker volume create zbx-box-db-postgres"
 
 # Fixin docker permissions to write (needed for linux only)
-sudo chmod -R o+rw $WORKTREE
+# sudo chmod -R o+rw $WORKTREE
