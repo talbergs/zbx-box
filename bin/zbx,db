@@ -24,6 +24,18 @@
 source zbx-script-header
 source zbx-get-ref
 
+has-schema-build() {
+    if [ -e $WORKTREE/$REF/database/postgresql/schema.sql ];then
+        return
+    fi
+
+    read -p "$(tput bold)No schema files found. Build now? $(tput sgr0)" YES
+    case ${YES^^} in
+        '' | Y*) zbx,make $REF -D;;
+        *) >2& echo Bye then.;exit 7;;
+    esac
+}
+
 postgres() {
     zbx-util-color -H "DROP DATABASE IF EXISTS \"$DBNAME\""
     docker exec zbx-box-postgres psql -q -U postgres -c "DROP DATABASE IF EXISTS \"$DBNAME\""
@@ -175,7 +187,7 @@ postgres-query() {
     docker exec -it zbx-box-postgres psql -q -U postgres -d "$DBNAME"
 }
 
-ex_dbs=()
+ex_dbs=(has-schema-build)
 while [[ $# > 0 ]];do case $1 in
     #- Apply database to postgres service.
     -P  | --postgres ) ex_dbs+=(postgres) ;;
