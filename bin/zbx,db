@@ -95,7 +95,13 @@ oracle-11g() {
 
     echo "$sql" > $WORKTREE/$REF/database/oracle/refresh-11g.sql
 
-    sed -e 's/nvarchar2(2048)/nvarchar2(2000)/g' -e "s/\sscript\s.*\$/script nclob DEFAULT '' ,/g" $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
+    sed \
+        -e 's/nvarchar2(2048)/nvarchar2(2000)/g' \
+        -e "s/\sscript\s.*\$/script nclob DEFAULT '' ,/g" \
+        -e "s/\soldvalue\s.*\$/oldvalue nclob DEFAULT '' ,/g" \
+        -e "s/\snewvalue\s.*\$/newvalue nclob DEFAULT '' ,/g" \
+        $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
+
     sed "1s|'.*'|'/var/www/html/$REF/misc/images'|" $WORKTREE/$REF/database/oracle/images.sql > $WORKTREE/$REF/database/oracle/images-patched.sql
 
     case "$(zbx,version $REF --major)" in

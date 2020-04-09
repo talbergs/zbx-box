@@ -36,7 +36,7 @@ vim(){
 
 server-postgres(){
     file=$WORKTREE/$REF/zabbix_server.conf
-    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=zabbix DBUSER=postgres DBNAME=$REF > $file
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=zabbix DBUSER=postgres DBNAME=$DREF > $file
     nl $file | zbx-util-color -H "(postgres) $file"
 }
 
