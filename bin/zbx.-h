@@ -22,10 +22,8 @@
 ## Also, terminal width is taken into acount to do wrapping.
 ## Note: '\$' must be escaped like so '\\\$' and double qotes also '\"' -> '\\\"', because block is evaluated substituting things like \$PWD and more. Even subshell will be run.
 [[ -z $1 ]] && $0 "$0" && exit 9
-[[ ! -x $1 ]] && >&2 echo Shouldn\'t \"$1\" be executable? && exit 4
 
 # TODO: if line has 4 leading spaces apply sh highlight ansi
-# TODO: must be able to pass terminal width as argument (because of readme-gen.sh) - changes in line-wraps
 awk -v PROG="$(basename $1)" -v NO_ANSI="$2" -v GIVEN_WIDTH="$3" '
 
 BEGIN {
@@ -195,4 +193,4 @@ function wrap(str, wrap_len, pad_str) {
 
     return strw
 }
-' "$1"
+' "$(which $1)"

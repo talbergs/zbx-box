@@ -17,6 +17,34 @@ source zbx-get-ref
 # TODO: This deletes all stopped containers. Crutch!
 docker container prune --filter="label=zbx-box" --force
 
+has-agent-build() {
+    if [ -e $WORKTREE/$REF/dist/sbin/zabbix_agentd ];then
+        return
+    fi
+
+    read -p "$(tput bold)No agent build found. Build now? $(tput sgr0)" YES
+    case ${YES^^} in
+        '' | Y*) zbx,make $REF -A;;
+        *) >2& echo Bye then.;exit 7;;
+    esac
+}
+
+has-server-build() {
+    if [ -e $WORKTREE/$REF/dist/sbin/zabbix_server ];then
+        return
+    fi
+
+    variant=$(zbx.-h zbx,make \
+        | ag 'Build server' \
+        | fzf --ansi --header 'Choose server variant.' \
+        | cut -f2 -d' ')
+
+    case ${variant} in
+        -*) zbx,make $REF $variant;;
+        *) >2& echo Bye then.;exit 7;;
+    esac
+}
+
 stop-server() {
     DREF=$(zbx-util-ref-to-dref $REF)
     docker rm -f zbx-box-$DREF-server
@@ -79,14 +107,14 @@ builder_img="$(zbx-image-id builder)"
 ex=()
 while [[ $# > 0 ]];do case $1 in
     #- Run server.
-    -S | --server ) ex+=(run-server) ;;
+    -S | --server ) ex+=(has-server-build run-server) ;;
     #- Run server (oracle)
     -So| --server-oracle )
         builder_img="$(zbx-image-id builder-oracle)"
-        ex+=(run-server)
+        ex+=(has-server-build run-server)
     ;;
     #- Run agent.
-    -A | --agent ) ex+=(run-agent) ;;
+    -A | --agent ) ex+=(has-agent-build run-agent) ;;
     #- Run server.
     -Sx| --stop-server ) ex+=(stop-server) ;;
     #- Stop agent.
