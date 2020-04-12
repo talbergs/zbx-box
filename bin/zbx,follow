@@ -24,8 +24,7 @@ symphony() {
     name=$(docker inspect --format '{{.Name}}' "${tailers[0]}")
     zbx-util-color -H "Using service '$name'"
 
-    # TODO: permission issue
-    docker exec -it --user $(id -u):$(id -g) "${tailers[0]}" nc -lkU /var/www/html/$REF/frontends/php/debug.sock
+    docker exec -it "${tailers[0]}" nc -lkU /var/www/html/$REF/frontends/php/debug.sock
 }
 
 logs=()

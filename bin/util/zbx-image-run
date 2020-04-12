@@ -26,8 +26,9 @@ else
 fi
 
 docker run \
-	--network zbx-box \
-	--volume zbx-box:/var/www/html \
-	--label zbx-box=$name \
+    --network zbx-box \
+    --user $(id -u):$(id -g) \
+    --volume zbx-box:/var/www/html \
+    --label zbx-box=$name \
     $detach \
-	--name zbx-box-$name ${args[@]} $img "${cmd[@]}"
+    --name zbx-box-$name ${args[@]} $img "${cmd[@]}"

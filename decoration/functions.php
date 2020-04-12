@@ -43,7 +43,6 @@ function t() {
 
     if (!$sock) {
         $path = 'unix:///var/www/html' . dirname($_SERVER['PHP_SELF']) . '/debug.sock';
-        $path = '/dev/stdout';
         $sock = stream_socket_client($path, $errno, $errstr);
     }
 
