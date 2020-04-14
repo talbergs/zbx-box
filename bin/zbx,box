@@ -77,6 +77,10 @@ compose-service() {
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/config.json:/config.json \
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/Caddyfile:/Caddyfile
         ;;
+        mailhog)
+            zbx-compose $name \
+                --publish 8025:8025
+        ;;
         * )
             >&2 echo "Unknown service '$name'";
         ;;

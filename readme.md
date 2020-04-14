@@ -18,7 +18,7 @@ Checkpoints:
 - [x] self signed ssl
 - [x] php 5.4  & php 7.2 & php 7.4 (subdomain switch)
 - [ ] jira API integration (issue description)
-- [ ] emails (mailhog-view)
+- [x] emails (mailhog-view)
 - [x] http/2
 - [ ] traefik (rewrite /frontends/php and more ..)
 - [ ] xdebug (also used as profiler) + ui tool (php 5.4 only)
