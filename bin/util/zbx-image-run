@@ -27,7 +27,6 @@ fi
 
 docker run \
     --network zbx-box \
-    --user $(id -u):$(id -g) \
     --volume zbx-box:/var/www/html \
     --label zbx-box=$name \
     $detach \

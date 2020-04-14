@@ -39,6 +39,7 @@ compose-service() {
     case $name in
         php54-fpm | php72-fpm | php74-fpm | php74-fpm-oracle)
             zbx-compose $name \
+                --user $(id -u):$(id -g) \
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/zabbix.php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
                 --volume "$ZBX_BOX_ROOT"/decoration:/decoration
         ;;
@@ -66,7 +67,7 @@ compose-service() {
         ;;
         postgres)
             zbx-compose $name \
-                --volume zbx-box-db-oracle:/var/lib/postgresql/data
+                --volume zbx-box-db-postgres:/var/lib/postgresql/data
         ;;
         caddy)
             zbx-compose $name \
