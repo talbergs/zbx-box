@@ -151,6 +151,7 @@ Usage: zbx+config <zref?> [FLAG?..]
  -Sp --server-postgres    Write server config for postgres.
  -So --server-oracle-19c  Write server config for oracle 19c.
  -Sc --server-oracle-11g  Write server config for oracle 11g.
+ -Ta --test-api           Write server config api-tests
  -F  --frontend           Write frontend config only.
 ```
 </details>
@@ -461,6 +462,69 @@ Usage: zbx,web <zref?> [FLAG?]
 </details>
 <!-- }}} -->
 
+
+<!-- {{{OUTPUT-TODO -->
+
+<details>
+<summary>`TODO list`</summary>
+
+```
+bin/util/zbx-compose-status:17:    # TODO: is log itself remembered to stderr also? (saw it on running container)
+bin/util/zbx-container-id:7:# TODO: the `-n 1` flags chooses last created container, might also take all and offer to clear the leak.
+bin/zbx,box:139:# TODO: show [x] or [ ] within list, then parse it out
+bin/zbx,box:140:# TODO: show preview less (if no flags given only then)
+bin/zbx,box:141:# TODO: bind keys to do action and put in fzf multiline header
+bin/zbx,box:35:    # TODO: This deletes all stopped containers.
+bin/zbx,check:8:### TODO: WIP!
+bin/zbx+config:74:# TODO: must accept -D <variant> (defaults to postgres) to configure for oracle or maria
+bin/zbx+config:75:# TODO: --mailhog flag would create/update media type with correct port and host for emails via api
+bin/zbx,db:145:	# TODO: it creates user surrounded with doublequotes in case of "master"
+bin/zbx,db:208:    # TODO: some issues here still to fix..
+bin/zbx,db:97:	# TODO: it creates user surrounded with doublequotes in case of "master"
+bin/zbx,dev:26:# TODO: it creates based on local ref - might add a switch to choose to fetch more recent base version during "create"
+bin/zbx.flags:41:# TODO not all paths are matched, contribution needed.
+bin/zbx,generate:4:## TODO: for now only changelog entry file.
+bin/zbx,generate:5:## TODO: check-strings comment
+bin/zbx.-h:26:# TODO: if line has 4 leading spaces apply sh highlight ansi
+bin/zbx,make:29:# TODO: FIX multiple builder images appear (take recent one)
+bin/zbx,make:31:# TODO: This deletes all stopped containers.
+bin/zbx,run:17:# TODO: This deletes all stopped containers. Crutch!
+bin/zbx-script-env:25:# TODO bake these things: webgrind, opcache-gui, into dashboard
+bin/zbx-script-env:59:# TODO: use labels.
+bin/zbx.]sender:4:# TODO: documentation
+bin/zbx.[server:4:# TODO: documentation
+bin/zbx-util-color:7:# TODO: implement height bounded scrolling buffer
+```
+</details>
+<details>
+<summary>`TODO list`</summary>
+
+```
+build/php54-fpm/Dockerfile:26:# TODO: figure out how to install oci8 in here
+```
+</details>
+<details>
+<summary>`TODO list`</summary>
+
+```
+
+```
+</details>
+<details>
+<summary>`TODO list`</summary>
+
+```
+git.hooks/post-update:2:# TODO: make it pull info from jira if in feature branch, then notify if info has changed
+```
+</details>
+<details>
+<summary>`TODO list`</summary>
+
+```
+
+```
+</details>
+<!-- }}} -->
 
 <!-- {{{EXEC-bak
 tmpfile=$(mktemp)

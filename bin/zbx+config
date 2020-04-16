@@ -58,6 +58,14 @@ agentd(){
     nl $file | zbx-util-color -H "$file"
 }
 
+test-api(){
+    file=$WORKTREE/$REF/frontends/php/tests/bootstrap.php
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/bootstrap.php.tmpl \
+        BASEDIR=/var/www/$REF \
+        URL=$(zbx,web -n) > $file
+    nl $file | zbx-util-color -H "$file"
+}
+
 ex=()
 if [ $# -eq 0 ]; then
     ex=(agentd server-postgres vim frontend)
@@ -76,6 +84,8 @@ while [[ $# > 0 ]];do case $1 in
     -So| --server-oracle-19c ) ex+=(server-oracle-19c) ;;
     #- Write server config for oracle 11g.
     -Sc| --server-oracle-11g ) ex+=(server-oracle-11g) ;;
+    #- Write server config api-tests
+    -Ta| --test-api ) ex+=(test-api) ;;
     #- Write frontend config only.
     -F | --frontend ) ex+=(frontend) ;;
 esac;shift;done

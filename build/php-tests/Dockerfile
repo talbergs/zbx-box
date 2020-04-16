@@ -1,10 +1,5 @@
-FROM talbergs/zbx-box-php74
+# OS/ARCH - linux/386
+FROM php:7.2.29-fpm-buster@sha256:f2e75e5d2bb7bb72c13bc2fda19b0ef30485206f24f88169944b0a2f9612a7d3
 
-RUN pacman --noconfirm -Syy
-RUN pacman --noconfirm -S composer
-
-RUN mkdir /root/.composer/
-RUN echo '{"config":{"disable-tls":true,"secure-http":false}}' > /root/.composer/config.json
-RUN composer global require -- phpunit/phpunit:5.7.27
-
-CMD ["phpunit", "--version"]
+RUN apt-get update
+RUN apt-get install -y composer
