@@ -40,7 +40,8 @@ compose-service() {
         php54-fpm | php72-fpm | php74-fpm )
             zbx-compose $name \
                 --user $(id -u):$(id -g) \
-                --volume "$ZBX_BOX_ROOT"/cfg/$name/zabbix.php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name/php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name/fpm.conf:/usr/local/etc/php-fpm.d/zabbix.conf \
                 --volume "$ZBX_BOX_ROOT"/decoration:/decoration
         ;;
         oracle-11g)
