@@ -64,6 +64,7 @@ if [ $# -eq 0 ]; then
 fi
 
 # TODO: must accept -D <variant> (defaults to postgres) to configure for oracle or maria
+# TODO: --mailhog flag would create/update media type with correct port and host for emails via api
 while [[ $# > 0 ]];do case $1 in
     #- Write vimrc only.
     -V | --vim ) ex+=(vim) ;;

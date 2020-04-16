@@ -1,48 +1,52 @@
-FROM php:7.2.29-fpm-alpine3.11@sha256:6c97001e26a1105e809d65767d89cf862630f17bfac3a9770ab036b59a1afcd6
-# TODO oci8 "oracle database extension'
+# OS/ARCH - linux/386
+FROM php:7.2.29-fpm-buster@sha256:f2e75e5d2bb7bb72c13bc2fda19b0ef30485206f24f88169944b0a2f9612a7d3
 
-# gd --with-freetype --with-jpeg
-RUN apk add --update --no-cache \
-        freetype-dev \
-        libjpeg-turbo-dev \
-        libpng-dev \
-    && docker-php-ext-configure gd \
+## install bcmath extension
+RUN docker-php-ext-install bcmath
+
+## install sockets extension
+RUN docker-php-ext-install sockets
+
+RUN apt-get update
+
+RUN apt-get install -y apt-utils
+RUN apt-get install -y zlib1g-dev
+RUN apt-get install -y libpng-dev
+RUN apt-get install -y libjpeg62-turbo-dev
+RUN apt-get install -y libfreetype6-dev
+
+## gd --with-freetype --with-jpeg
+RUN docker-php-ext-configure gd \
         --with-freetype-dir=/usr/include/ \
         --with-jpeg-dir=/usr/include/ \
         --with-png-dir=/usr/include/ \
     && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" gd
 
-# install bcmath extension
-RUN docker-php-ext-install bcmath
+## install oracle extension
+RUN apt-get install -y alien libaio1
+ADD oracle-instantclient19.6-basic-19.6.0.0.0-1.i386.rpm .
+ADD oracle-instantclient19.6-devel-19.6.0.0.0-1.i386.rpm .
 
-# install sockets extension
-RUN docker-php-ext-install sockets
+RUN alien -i oracle-instantclient19.6-basic-19.6.0.0.0-1.i386.rpm
+RUN alien -i oracle-instantclient19.6-devel-19.6.0.0.0-1.i386.rpm
 
-# mysqli, pdo, pdo_mysql, pdo_pgsql, oracle
-RUN apk add --update --no-cache postgresql-dev \
-    && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql
+RUN docker-php-ext-install oci8
 
-# xdebug
-RUN docker-php-source extract \
-    && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && apk del .phpize-deps-configure \
-    && docker-php-source delete
+## install ldap extension
+# RUN apt-get install -y ldap-utils
+# RUN apt-get install -y libldap2-dev
+# RUN docker-php-ext-configure ldap --with-libdir=include/
+# RUN docker-php-ext-install ldap
 
-# install gettext extension
-RUN apk add --update --no-cache gettext-dev \
-    && docker-php-ext-configure gettext \
-    && docker-php-ext-install gettext
-
-# Install ldap extension
-RUN apk add --update --no-cache \
-          libldap && \
-      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
-          openldap-dev && \
-      docker-php-ext-configure ldap && \
-      docker-php-ext-install ldap && \
-      apk del .docker-php-ldap-dependancies
+## install gettext extension
+RUN docker-php-ext-install gettext
 
 # Openbsd netcat for zbx,follow
-RUN apk --no-cache add netcat-openbsd
+RUN apt-get install -y netcat-openbsd
+
+# Postgres
+RUN apt-get install -y postgresql-server-dev-all
+RUN docker-php-ext-install pgsql
+
+# MySql
+RUN docker-php-ext-install mysqli

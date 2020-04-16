@@ -94,6 +94,7 @@ mariadb() {
 
 oracle-11g() {
     sqls=/var/www/html/$REF/database/oracle
+	# TODO: it creates user surrounded with doublequotes in case of "master"
     sql="
         ALTER SYSTEM SET DB_CREATE_FILE_DEST=\"/tmp\";
         SHOW PARAMETER DB_CREATE_FILE_DEST;
@@ -141,6 +142,7 @@ oracle-11g() {
 
 oracle-19c() {
     sqls=/var/www/html/$REF/database/oracle
+	# TODO: it creates user surrounded with doublequotes in case of "master"
     sql="
         ALTER SYSTEM SET DB_CREATE_FILE_DEST=\"/tmp\";
         SHOW PARAMETER DB_CREATE_FILE_DEST;

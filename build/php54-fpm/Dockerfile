@@ -1,40 +1,56 @@
-# Docs: https://github.com/chialab/docker-php/blob/master/5.4/fpm/Dockerfile
-# it is ubuntu/debian from docker-hub/php official
+# OS/ARCH - unknown, but not 386
 FROM php:5.4.45-fpm@sha256:b8e42519a65cf21787c1662c7106d0f470b498284b3cd9abb2eb135635419434
-RUN apt-get -y update
-# TODO oci8 "oracle database extension'
 
-# install bcmath extension
+## install bcmath extension
 RUN docker-php-ext-install bcmath
 
-# install sockets extension
+## install sockets extension
 RUN docker-php-ext-install sockets
 
-# install pgsql and mysql extension
-RUN apt-get -y install php5-pgsql php5-mysql libpq-dev
-RUN docker-php-ext-install mysqli pgsql
+RUN apt-get update
 
-# install mbstring extension
-RUN docker-php-ext-configure mbstring \
-    && docker-php-ext-install mbstring
+RUN apt-get install -y apt-utils
+RUN apt-get install -y zlib1g-dev
+RUN apt-get install -y libpng-dev
+RUN apt-get install -y libjpeg62-turbo-dev
+RUN apt-get install -y libfreetype6-dev
 
-# install gettext extension
-RUN docker-php-ext-configure gettext \
-    && docker-php-ext-install gettext
-
-# install gd extension
-RUN apt-get -y install libjpeg-dev libpng-dev libfreetype6-dev
+## gd --with-freetype --with-jpeg
 RUN docker-php-ext-configure gd \
-        --with-freetype-dir=/usr/ \
-        --with-jpeg-dir=/usr/ \
-        --with-png-dir=/usr/ \
+        --with-freetype-dir=/usr/include/ \
+        --with-jpeg-dir=/usr/include/ \
+        --with-png-dir=/usr/include/ \
     && docker-php-ext-install gd
 
-# install opcache extension
-RUN pecl install zendopcache
-RUN docker-php-ext-enable opcache.so
+## install oracle extension
+# TODO: figure out how to install oci8 in here
+# RUN apt-get install -y alien libaio1
+# ADD oracle-instantclient19.6-basic-19.6.0.0.0-1.i386.rpm .
+# ADD oracle-instantclient19.6-devel-19.6.0.0.0-1.i386.rpm .
 
-# install ldap extension
-RUN apt-get -y install libldap2-dev
-RUN docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ \
-    && docker-php-ext-install ldap
+# RUN alien -i oracle-instantclient19.6-basic-19.6.0.0.0-1.i386.rpm
+# RUN alien -i oracle-instantclient19.6-devel-19.6.0.0.0-1.i386.rpm
+
+# RUN docker-php-ext-install oci8
+
+## install ldap extension
+# RUN apt-get install -y ldap-utils
+# RUN apt-get install -y libldap2-dev
+# RUN docker-php-ext-configure ldap --with-libdir=include/
+# RUN docker-php-ext-install ldap
+
+## install gettext extension
+RUN docker-php-ext-install gettext
+
+# Openbsd netcat for zbx,follow
+RUN apt-get install -y netcat-openbsd
+
+# Postgres
+RUN apt-get install -y postgresql-server-dev-all
+RUN docker-php-ext-install pgsql
+
+# MySql
+RUN docker-php-ext-install mysqli
+
+## install mbstring extension
+RUN docker-php-ext-install mbstring

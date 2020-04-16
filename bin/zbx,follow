@@ -16,9 +16,9 @@
 source zbx-script-header
 
 symphony() {
-    tailers=($(docker ps -q --filter name='^zbx-box-php7.-fpm$'))
+    tailers=($(docker ps -q --filter name='^zbx-box-php..-fpm$'))
     if [ -z $tailers ];then
-        >&2 echo at least one of php74 or php72 services must be running
+        >&2 echo at least one of php74 or php72 or php54 services must be running
         exit 22
     fi
     name=$(docker inspect --format '{{.Name}}' "${tailers[0]}")

@@ -1,45 +1,43 @@
-FROM php:7.4.4-fpm-alpine@sha256:95842ecdae821603b2877697d561b77c58f55511c6a19a445ed517ca204eca79
-# TODO oci8 "oracle database extension'
+# OS/ARCH - linux/386
+FROM php:7.4-fpm-buster@sha256:215232c33da867319f013815a8e136d4a7380ff0dafc286c11e33e80356d5a43
 
-# gd --with-freetype --with-jpeg
-RUN apk add --update --no-cache \
-        freetype-dev \
-        libjpeg-turbo-dev \
-        libpng-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" gd
-
-# install bcmath extension
+## install bcmath extension
 RUN docker-php-ext-install bcmath
 
-# install sockets extension
+## install sockets extension
 RUN docker-php-ext-install sockets
 
-# mysqli, pdo, pdo_mysql, pdo_pgsql, oracle
-RUN apk add --update --no-cache postgresql-dev \
-    && docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql
+RUN apt-get update
 
-# xdebug
-RUN docker-php-source extract \
-    && apk add --no-cache --virtual .phpize-deps-configure $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && apk del .phpize-deps-configure \
-    && docker-php-source delete
+RUN apt-get install -y apt-utils
+RUN apt-get install -y zlib1g-dev
+RUN apt-get install -y libpng-dev
+RUN apt-get install -y libjpeg62-turbo-dev
+RUN apt-get install -y libfreetype6-dev
 
-# install gettext extension
-RUN apk add --update --no-cache gettext-dev \
-    && docker-php-ext-configure gettext \
-    && docker-php-ext-install gettext
+## gd --with-freetype --with-jpeg
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j"$(getconf _NPROCESSORS_ONLN)" gd
 
-# Install ldap extension
-RUN apk add --update --no-cache \
-          libldap && \
-      apk add --update --no-cache --virtual .docker-php-ldap-dependancies \
-          openldap-dev && \
-      docker-php-ext-configure ldap && \
-      docker-php-ext-install ldap && \
-      apk del .docker-php-ldap-dependancies
+## install oracle extension
+RUN apt-get install -y alien libaio1
+ADD oracle-instantclient19.6-basic-19.6.0.0.0-1.i386.rpm .
+ADD oracle-instantclient19.6-devel-19.6.0.0.0-1.i386.rpm .
+
+RUN alien -i oracle-instantclient19.6-basic-19.6.0.0.0-1.i386.rpm
+RUN alien -i oracle-instantclient19.6-devel-19.6.0.0.0-1.i386.rpm
+
+RUN docker-php-ext-install oci8
+
+## install gettext extension
+RUN docker-php-ext-install gettext
 
 # Openbsd netcat for zbx,follow
-RUN apk --no-cache add netcat-openbsd
+RUN apt-get install -y netcat-openbsd
+
+# Postgres
+RUN apt-get install -y postgresql-server-dev-all
+RUN docker-php-ext-install pgsql
+
+# MySql
+RUN docker-php-ext-install mysqli

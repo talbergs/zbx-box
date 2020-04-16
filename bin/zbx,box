@@ -37,7 +37,7 @@ compose-service() {
 
     name=$1
     case $name in
-        php54-fpm | php72-fpm | php74-fpm | php74-fpm-oracle)
+        php54-fpm | php72-fpm | php74-fpm )
             zbx-compose $name \
                 --user $(id -u):$(id -g) \
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/zabbix.php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
