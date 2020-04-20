@@ -28,7 +28,7 @@ update-marker() {
 
 todo-details() {
     printf '<details>\n<summary>`%s`</summary>\n\n```\n%s\n```\n</details>\n' \
-        'TODO list' "$(grep -n --recursive TODO $1 | sort)"
+        $1 "$(grep -n --recursive TODO $1 | sort)"
 }
 
 # Scripts: help output of ./bin executables that has that "zbx-script-header" line, others are considered to be WIP.
@@ -45,5 +45,6 @@ done | update-marker git-hooks
 
 dirs=(bin build cfg git.hooks tmpl)
 for dir in ${dirs[*]};do
-    todo-details $dir
-done | update-marker TODO
+    # todo-details $dir
+    grep -n --recursive TODO $dir
+done | sort | echo -e '<details>\n\n```'"\n$(cat /dev/stdin)\n"'```\n</details>' | update-marker TODO

@@ -463,12 +463,13 @@ Usage: zbx,web <zref?> [FLAG?]
 <!-- }}} -->
 
 
+##### todo quickfix list
 <!-- {{{OUTPUT-TODO -->
 
 <details>
-<summary>`TODO list`</summary>
 
 ```
+bin/TODO:1:TODO: create "What have I done utility" to see all commits across workspaces yesterday.
 bin/util/zbx-compose-status:17:    # TODO: is log itself remembered to stderr also? (saw it on running container)
 bin/util/zbx-container-id:7:# TODO: the `-n 1` flags chooses last created container, might also take all and offer to clear the leak.
 bin/zbx,box:139:# TODO: show [x] or [ ] within list, then parse it out
@@ -494,34 +495,8 @@ bin/zbx-script-env:59:# TODO: use labels.
 bin/zbx.]sender:4:# TODO: documentation
 bin/zbx.[server:4:# TODO: documentation
 bin/zbx-util-color:7:# TODO: implement height bounded scrolling buffer
-```
-</details>
-<details>
-<summary>`TODO list`</summary>
-
-```
 build/php54-fpm/Dockerfile:26:# TODO: figure out how to install oci8 in here
-```
-</details>
-<details>
-<summary>`TODO list`</summary>
-
-```
-
-```
-</details>
-<details>
-<summary>`TODO list`</summary>
-
-```
 git.hooks/post-update:2:# TODO: make it pull info from jira if in feature branch, then notify if info has changed
-```
-</details>
-<details>
-<summary>`TODO list`</summary>
-
-```
-
 ```
 </details>
 <!-- }}} -->
