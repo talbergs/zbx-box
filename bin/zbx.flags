@@ -48,6 +48,7 @@ function testLine() {
         *create/src/schema.tmpl*) Installation ;;
         *create/src/data.tmpl*) Installation ;;
         *ChangeLog.d/*) Documentation ;;
+        *src/libs/zbxserver/*) Server ;;
         *create/src/*) Templates ;;
         *templates/*) Templates ;;
     esac

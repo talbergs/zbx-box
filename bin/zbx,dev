@@ -23,14 +23,15 @@ for i in $@;do case $i in
     -N | --no-push) nopush=1 ;;
 esac;done
 
-# TODO: it creates based on local ref - might add a switch to choose to fetch more recent base version during "create"
 create-feature(){
     cd "$WORKTREE/master"
     git worktree add --no-track -f -b "$1" "$WORKTREE/$1" "$2"
+
     cd $WORKTREE/$1
 
     if [ -z $nopush ]; then
         git push origin HEAD
+        git branch --set-upstream-to "origin/$1"
     fi
 
     return $?
