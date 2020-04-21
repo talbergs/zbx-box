@@ -1,3 +1,43 @@
 #!/bin/bash
-### Usage: $0 <zref?> [FLAGS..]
-docker exec -it --user $(id -u):$(id -g) --worktree/var/www/html/$REF/frontends/php/api-json phpinit --bootstrap ../bootstrap.php
+### Usage: $0 <zref?> [phpunit-args..]
+## Runs api tests at given workspace.
+## Tests are executed on a disposable copy of source code.
+## Example:
+##     $0 -- --filter=\"*Host*\"
+##     Api tests are run at current workspace.
+## Example:
+##     $0 m --filter=\"*Host*\"
+##     Api tests are run at \"master\" workspace.
+##~
+source zbx-script-header
+source zbx-get-ref
+
+IMG=$(zbx-image-id php-tests)
+
+if [ -z "$IMG" ]; then
+    zbx-image-build php-tests
+    IMG=$(zbx-image-id php-tests)
+fi
+
+file=$WORKTREE/$REF/frontends/php/tests/bootstrap.php
+if [ ! -e $file ];then
+zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/bootstrap.php.tmpl \
+    REF=$REF \
+    DBPASS=zabbix \
+    DBUSER=postgres \
+    DBNAME=$DREF > $file
+nl $file | zbx-util-color -H "(phpunit) $file"
+fi
+
+[ "--" = $1 ] && shift
+
+docker run \
+    --rm \
+    --network zbx-box \
+    --volume zbx-box:/var/www/html \
+    --label zbx-box-tests \
+    --name zbx-box-tests \
+    --workdir /var/www/html/$REF \
+    -v $ZBX_BOX_ROOT/build/php-tests/api.sh:/api.sh \
+    -it \
+    $IMG /api.sh $REF $@
