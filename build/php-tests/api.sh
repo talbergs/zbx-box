@@ -13,6 +13,18 @@ mkdir -p /tmp/var/www/html
 
 cp -r /var/www/html/$REF/frontends/php/* /tmp/var/www/html 
 
-cd /tmp/var/www/html/tests
+cd /tmp/var/www/html
+chmod 777 -R /tmp/var/www/html
+mv conf/api-json-zabbix.conf.php conf/zabbix.conf.php
+php -S 0.0.0.0:8020 2>/dev/null &
+sleep 2
+cd tests
 
-/test/vendor/bin/phpunit --bootstrap bootstrap.php $@
+cp -r /test/vendor /tmp/var/www/html/tests
+
+/tmp/var/www/html/tests/vendor/bin/phpunit --bootstrap bootstrap.php $@
+
+echo "DONE waiting for ctrl-c .."
+while true ; do
+    sleep 1
+done

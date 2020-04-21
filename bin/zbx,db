@@ -218,6 +218,9 @@ while [[ $# > 0 ]];do case $1 in
     -Ooq| --oracle-11g-query ) ex_dbs+=(oracle-11g-query) ;;
     #- Apply "api_json" data set.
     -A  | --api-json ) apijson=1 ;;
+    #- Prepare API json database (postgres)
+    #- It implies --named flag to be \"-api-json\" (db affix)
+    -API ) affix="-api-json"; apijson=1 ; ex_dbs=(postgres) ;;
     #- Apply "selenium" data set.
     -S  | --selenium ) selenium=1 ;;
     #- <[a-z\-_]> Add affix to database name

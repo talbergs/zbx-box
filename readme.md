@@ -8,31 +8,19 @@ How-to:
 - work on `zbx,dev <branch-basename>`
 
 Checkpoints:
-- [ ] Developer dashboard (overview and links)
-- [x] containerized
-- [x] postgresql
-- [x] oracle
-- [ ] mariadb
-- [x] git hooks
-- [x] multiple zabbix servers
-- [x] self signed ssl
-- [x] php 5.4  & php 7.2 & php 7.4 (subdomain switch)
-- [ ] jira API integration (issue description)
-- [x] emails (mailhog-view)
-- [x] http/2
-- [ ] traefik (rewrite /frontends/php and more ..)
-- [ ] xdebug (also used as profiler) + ui tool (php 5.4 only)
-- [ ] symfony vardumper (for terminal view also)
-- [x] dev scripts
-- [ ] debug level logs for all containers
-- [x] opcache + opcache-gui
 - [x] git worktree workflow
-- [ ] cloud setup (server proxy agent etc)
-- [ ] easy tests runner (API, unit, integration and headless selenium)
-- [ ] ellastic search stack
-- [ ] php profiler XProf + https://github.com/badoo/liveprof-ui/
-- [x] i18n (all zabbix locales)
-- [ ] clean abandoned data (databases etc) for deleted <Refs> (or any)
+- [x] http/2 + self-signed cert
+- [x] php 5.4  & php 7.2 & php 7.4 (subdomain switch)
+- [ ] Developer dashboard (overview and links)
+- [x] postgresql [x] oracle [ ] mariadb [ ] ellastic
+- [x] smart git hooks
+- [x] multiple zabbix servers
+- [x] emails (mailhog-view)
+- [ ] jira API integration (issue description)
+- [x] debug level logs for all containers
+- [x] cloud setup (server proxy agent etc)
+- [x] easy tests runner (API, unit, integration and headless selenium)
+- [x] dev scripts [x] symfony vardumper (for terminal view also)
 
 ## Git hooks:
 <!-- {{{OUTPUT-git-hooks -->
@@ -189,6 +177,8 @@ Usage: zbx,db <zref?> [FLAGS..]
  -Onq --oracle-19c-query           Quick open repl (use current database).
  -Ooq --oracle-11g-query           Quick open repl (use current database).
  -A   --api-json                   Apply api_json data set.
+ -API                              Prepare API json database (postgres) It implies --named flag to 
+                                   be "-api-json" (db affix)
  -S   --selenium                   Apply selenium data set.
  -N   --named             [a-z\-_] Add affix to database name
 ```
@@ -393,6 +383,24 @@ Usage: zbx,string-changes <zref?> [FLAGS..]
 ```
 </details>
 <details>
+<summary>`zbx,test`</summary>
+
+```
+Usage: zbx,test <zref?> [phpunit-args..]
+~  Runs api tests at given workspace. (uses postgres db only)
+~  Tests are executed on a disposable copy of source code and on separated http server.
+~  Example:
+~      zbx,test -- --filter="*Host*" api_json/ApiJsonTests.php
+~      Api tests are run at current workspace.
+~  Example:
+~      zbx,test m api_json/ApiJsonTests.php
+~      All api tests are run at "master" workspace.
+~  Before runing this ensure database is in place: zbx,db -API
+~  One workspace can be tested at a time.
+~ ~
+```
+</details>
+<details>
 <summary>`zbx-util-color`</summary>
 
 ```
@@ -482,7 +490,6 @@ bin/zbx+config:75:# TODO: --mailhog flag would create/update media type with cor
 bin/zbx,db:145:	# TODO: it creates user surrounded with doublequotes in case of "master"
 bin/zbx,db:208:    # TODO: some issues here still to fix..
 bin/zbx,db:97:	# TODO: it creates user surrounded with doublequotes in case of "master"
-bin/zbx,dev:26:# TODO: it creates based on local ref - might add a switch to choose to fetch more recent base version during "create"
 bin/zbx.flags:41:# TODO not all paths are matched, contribution needed.
 bin/zbx,generate:4:## TODO: for now only changelog entry file.
 bin/zbx,generate:5:## TODO: check-strings comment
