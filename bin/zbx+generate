@@ -21,7 +21,9 @@ upstream() {
 
 ch_dir=$(git rev-parse --show-toplevel)/ChangeLog.d
 file=$ch_dir/$(ls $ch_dir | fzf)/$(ticket-name)
-echo -n "$(zbx.flags $(git diff --name-only $(git merge-base $(upstream) HEAD) HEAD)) [$(ticket-name)] ()" > $file
+echo -n "$(zbx.flags $(git diff --name-only $(git merge-base $(upstream) HEAD) HEAD)) [$(ticket-name)] ($JIRAUSER)" > $file
 
 echo $file
+git add $file
 cat $file
+$EDITOR $file
