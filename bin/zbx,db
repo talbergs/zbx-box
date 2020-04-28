@@ -205,8 +205,7 @@ while [[ $# > 0 ]];do case $1 in
     -P  | --postgres ) ex_dbs+=(postgres) ;;
     #- Quick open repl (use current database).
     -Pq | --postgres-query ) ex_dbs+=(postgres-query) ;;
-    # TODO: some issues here still to fix..
-    #- <{WIP}> Apply database to mariadb service.
+    #- Apply database to mariadb service.
     -M  | --mariadb ) ex_dbs+=(mariadb) ;;
     #- Apply database to oracle-19c (new) service.
     -On | --oracle-19c ) ex_dbs+=(oracle-19c) ;;

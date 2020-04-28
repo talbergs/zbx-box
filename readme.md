@@ -12,7 +12,7 @@ Checkpoints:
 - [x] http/2 + self-signed cert
 - [x] php 5.4  & php 7.2 & php 7.4 (subdomain switch)
 - [ ] Developer dashboard (overview and links)
-- [x] postgresql [x] oracle [ ] mariadb [ ] ellastic
+- [x] postgresql [x] oracle [x] mariadb [ ] ellastic
 - [x] smart git hooks
 - [x] multiple zabbix servers
 - [x] emails (mailhog-view)
@@ -171,7 +171,7 @@ Usage: zbx,db <zref?> [FLAGS..]
 ~ ~
  -P   --postgres                   Apply database to postgres service.
  -Pq  --postgres-query             Quick open repl (use current database).
- -M   --mariadb           {WIP}    Apply database to mariadb service.
+ -M   --mariadb                    Apply database to mariadb service.
  -On  --oracle-19c                 Apply database to oracle-19c (new) service.
  -Oo  --oracle-11g                 Apply database to oracle-11g (old) service.
  -Onq --oracle-19c-query           Quick open repl (use current database).
@@ -252,10 +252,10 @@ Usage: zbx,follow [SERVICE?..]
 ```
 </details>
 <details>
-<summary>`zbx,generate`</summary>
+<summary>`zbx+generate`</summary>
 
 ```
-Usage: zbx,generate <zref?>
+Usage: zbx+generate <zref?>
 ~  Generates few things.
 ~  TODO: for now only changelog entry file.
 ~  TODO: check-strings comment
@@ -480,19 +480,18 @@ Usage: zbx,web <zref?> [FLAG?]
 bin/TODO:1:TODO: create "What have I done utility" to see all commits across workspaces yesterday.
 bin/util/zbx-compose-status:17:    # TODO: is log itself remembered to stderr also? (saw it on running container)
 bin/util/zbx-container-id:7:# TODO: the `-n 1` flags chooses last created container, might also take all and offer to clear the leak.
-bin/zbx,box:139:# TODO: show [x] or [ ] within list, then parse it out
-bin/zbx,box:140:# TODO: show preview less (if no flags given only then)
-bin/zbx,box:141:# TODO: bind keys to do action and put in fzf multiline header
+bin/zbx,box:143:# TODO: show [x] or [ ] within list, then parse it out
+bin/zbx,box:144:# TODO: show preview less (if no flags given only then)
+bin/zbx,box:145:# TODO: bind keys to do action and put in fzf multiline header
 bin/zbx,box:35:    # TODO: This deletes all stopped containers.
 bin/zbx,check:8:### TODO: WIP!
 bin/zbx+config:74:# TODO: must accept -D <variant> (defaults to postgres) to configure for oracle or maria
 bin/zbx+config:75:# TODO: --mailhog flag would create/update media type with correct port and host for emails via api
 bin/zbx,db:145:	# TODO: it creates user surrounded with doublequotes in case of "master"
-bin/zbx,db:208:    # TODO: some issues here still to fix..
 bin/zbx,db:97:	# TODO: it creates user surrounded with doublequotes in case of "master"
 bin/zbx.flags:41:# TODO not all paths are matched, contribution needed.
-bin/zbx,generate:4:## TODO: for now only changelog entry file.
-bin/zbx,generate:5:## TODO: check-strings comment
+bin/zbx+generate:4:## TODO: for now only changelog entry file.
+bin/zbx+generate:5:## TODO: check-strings comment
 bin/zbx.-h:26:# TODO: if line has 4 leading spaces apply sh highlight ansi
 bin/zbx,make:29:# TODO: FIX multiple builder images appear (take recent one)
 bin/zbx,make:31:# TODO: This deletes all stopped containers.
