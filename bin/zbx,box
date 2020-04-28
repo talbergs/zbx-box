@@ -66,6 +66,10 @@ compose-service() {
                 --shm-size=4g \
                 --rm
         ;;
+        mariadb)
+            zbx-compose $name \
+                --volume zbx-box-db-mariadb:/var/lib/mysql
+        ;;
         postgres)
             zbx-compose $name \
                 --volume zbx-box-db-postgres:/var/lib/postgresql/data
