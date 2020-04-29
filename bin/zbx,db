@@ -118,18 +118,21 @@ oracle-11g() {
 
     echo "$sql" > $WORKTREE/$REF/database/oracle/refresh-11g.sql
 
-    sed \
-        -e 's/nvarchar2(2048)/nvarchar2(2000)/g' \
-        -e "s/\sscript\s.*\$/script nclob DEFAULT '' ,/g" \
-        -e "s/\soldvalue\s.*\$/oldvalue nclob DEFAULT '' ,/g" \
-        -e "s/\snewvalue\s.*\$/newvalue nclob DEFAULT '' ,/g" \
-        $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
+    # sed \
+    #     -e 's/nvarchar2(2048)/nvarchar2(2000)/g' \
+    #     -e "s/\sscript\s.*\$/script nclob DEFAULT '' ,/g" \
+    #     -e "s/\soldvalue\s.*\$/oldvalue nclob DEFAULT '' ,/g" \
+    #     -e "s/\snewvalue\s.*\$/newvalue nclob DEFAULT '' ,/g" \
+    #     $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
+
+    sed 's/nvarchar2(2048)/nvarchar2(2000)/g' $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
 
     sed "1s|'.*'|'/var/www/html/$REF/misc/images'|" $WORKTREE/$REF/database/oracle/images.sql > $WORKTREE/$REF/database/oracle/images-patched.sql
 
     case "$(zbx,version $REF --major)" in
         5.0 | 4.4)
-            sed '/^INSERT INTO media_type/,+3d' $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+            # sed '/^INSERT INTO media_type/,+3d' $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+            cat $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
         ;;
         * | 4.2 | 4.0 | 3.4 | 3.2 | 3.0 )
             cat $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
@@ -171,12 +174,14 @@ oracle-19c() {
     # https://stackoverflow.com/a/25452936/2644170 # nvarchar2
     # https://support.zabbix.com/browse/ZBXNEXT-5335
     sed 's/nvarchar2(2048)/nvarchar2(2000)/g' $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
+    # cat $WORKTREE/$REF/database/oracle/schema.sql > $WORKTREE/$REF/database/oracle/schema-patched.sql
     sed "1s|'.*'|'/var/www/html/$REF/misc/images'|" $WORKTREE/$REF/database/oracle/images.sql > $WORKTREE/$REF/database/oracle/images-patched.sql
 
     case "$(zbx,version $REF --major)" in
         5.0 | 4.4)
             # https://support.zabbix.com/browse/ZBX-17512
-            sed '/^INSERT INTO media_type/,+3d' $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+            # sed '/^INSERT INTO media_type/,+3d' $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
+            cat $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql
         ;;
         * | 4.2 | 4.0 | 3.4 | 3.2 | 3.0 )
             cat $WORKTREE/$REF/database/oracle/data.sql > $WORKTREE/$REF/database/oracle/data-patched.sql

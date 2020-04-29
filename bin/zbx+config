@@ -36,19 +36,19 @@ vim(){
 
 server-postgres(){
     file=$WORKTREE/$REF/zabbix_server.conf
-    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=zabbix DBUSER=postgres DBNAME=$DREF > $file
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=zabbix DBUSER=postgres DBNAME=$DREF DBHOST=zbx-box-postgres > $file
     nl $file | zbx-util-color -H "(postgres) $file"
 }
 
 server-oracle-19c(){
     file=$WORKTREE/$REF/zabbix_server.conf
-    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=$REF DBUSER=$REF DBNAME=INDIA > $file
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=$DREF DBUSER=$DREF DBNAME=INDIA DBHOST=zbx-box-oracle-19c > $file
     nl $file | zbx-util-color -H "(oracle-19c) $file"
 }
 
 server-oracle-11g(){
     file=$WORKTREE/$REF/zabbix_server.conf
-    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=$REF DBUSER=$REF DBNAME=XE > $file
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=$DREF DBUSER=$DREF DBNAME=XE DBHOST=zbx-box-oracle-11g > $file
     nl $file | zbx-util-color -H "(oracle-11g) $file"
 }
 
@@ -75,19 +75,19 @@ fi
 # TODO: --mailhog flag would create/update media type with correct port and host for emails via api
 while [[ $# > 0 ]];do case $1 in
     #- Write vimrc only.
-    -V | --vim ) ex+=(vim) ;;
+    -V  | --vim ) ex+=(vim) ;;
     #- Write agentd config only.
-    -A | --agentd ) ex+=(agentd) ;;
+    -A  | --agentd ) ex+=(agentd) ;;
     #- Write server config for postgres.
-    -Sp| --server-postgres ) ex+=(server-postgres) ;;
+    -Sp | --server-postgres ) ex+=(server-postgres) ;;
     #- Write server config for oracle 19c.
-    -So| --server-oracle-19c ) ex+=(server-oracle-19c) ;;
+    -Son| --server-oracle-19c ) ex+=(server-oracle-19c) ;;
     #- Write server config for oracle 11g.
-    -Sc| --server-oracle-11g ) ex+=(server-oracle-11g) ;;
+    -Soo| --server-oracle-11g ) ex+=(server-oracle-11g) ;;
     #- Write server config api-tests
-    -Ta| --test-api ) ex+=(test-api) ;;
+    -Ta | --test-api ) ex+=(test-api) ;;
     #- Write frontend config only.
-    -F | --frontend ) ex+=(frontend) ;;
+    -F  | --frontend ) ex+=(frontend) ;;
 esac;shift;done
 
 for e in ${ex[*]}; do

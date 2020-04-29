@@ -1,5 +1,5 @@
 LogFile=/var/www/html/{{ $REF }}/dist/zabbix_server.log
-DBHost=zbx-box-postgres
+DBHost={{ $DBHOST }}
 DBName={{ $DBNAME }}
 DBUser={{ $DBUSER }}
 DBPassword={{ $DBPASS }}

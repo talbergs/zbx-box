@@ -1,4 +1,5 @@
 FROM talbergs/oracle-19c:india
+# TODO: build ^ that with Incorrect parameter "NLS_NCHAR_CHARACTERSET" value: "AL16UTF16" instead "UTF8".
 
 # USER root
 
