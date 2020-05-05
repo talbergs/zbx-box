@@ -1,7 +1,16 @@
 #!/bin/bash
 ### Usage: $0
-## To get help from zabbix_server binary use mid-short flag "-help".
-# TODO: documentation
+## Wraps current workspace zabbix_server binary.
+## Example:
+##     $0 -R log_level_increase=\"lld worker\"
+##     $0 -R log_level_decrease=\"lld worker\"
+##     $0 -R log_level_increase=\"alerter\"
+##     $0 -R log_level_increase=\"alert syncer\"
+##     $0 -R log_level_increase=\"alert manager\"
+##     $0 -R log_level_increase=\"preprocessing worker\"
+##     $0 -R config_cache_reload
+## To get help from zabbix_server binary use mid-short flag \"-help\".
+##~
 
 source zbx-script-header
 source zbx-get-ref

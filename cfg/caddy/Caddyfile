@@ -28,7 +28,8 @@ root * /var/www/html
 @master {
     path_regexp ^\/master\/(?P<more>.*)?$
 }
-rewrite @master /master/frontends/php/{http.regexp.more}
+rewrite @master /master/ui/{http.regexp.more}
+# rewrite @master /master/frontends/php/{http.regexp.more}
 
 # localhost/4.0/
 @release {

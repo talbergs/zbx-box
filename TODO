@@ -1,3 +1,4 @@
+- TODO: upgrade - caddy 2.0 is released
 - prep-commit-message.hook: cherry-pick should not add ";no conflicts" if --no-commit used
 - generate "Available in:" list jira comment (may match on commit message string)
 - zbx,box - it can start stopped container if found instead of recreating
