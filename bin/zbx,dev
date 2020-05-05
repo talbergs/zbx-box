@@ -21,6 +21,8 @@ source zbx-script-header
 for i in $@;do case $i in
     #- Workspace setup as usual - except new brach will NOT be pushed!
     -N | --no-push) nopush=1 ;;
+    #- Workspace setup as usual - for local use only (implies --no-push).
+    -Nn| --no-validate) nopush=1; novalidate=1;;
 esac;done
 
 create-feature(){
@@ -28,6 +30,13 @@ create-feature(){
     git worktree add --no-track -f -b "$1" "$WORKTREE/$1" "$2"
 
     cd $WORKTREE/$1
+
+    if [ -d ./ui ];then
+        (
+            mkdir -p "frontends" && cd $_
+            ln -srf ../ui php
+        )
+    fi
 
     if [ -z $nopush ]; then
         git push origin HEAD
@@ -94,7 +103,11 @@ if [ -z "$1" ];then
     done
 # create-feature
 else
-    REF=$(validate-create $1)
+    if [ -z $novalidate ]; then
+        REF=$(validate-create $1)
+    else
+        REF=$1
+    fi
 
     BASEREF="origin/$(ls-remote | fzf \
         --header "About to create '$REF'!" \

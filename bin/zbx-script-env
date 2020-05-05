@@ -18,7 +18,11 @@ source $ZBX_BOX_ROOT/.env
 
 mkdir -p $WORKTREE/{master,{feature,release}}
 
-[ ! -d "$WORKTREE/master/.git" ] && git clone $GITREMOTE $WORKTREE/master
+[ ! -d "$WORKTREE/master/.git" ] && git clone $GITREMOTE $WORKTREE/master && (
+    mkdir -p "$WORKTREE/master/frontends" && cd $_
+    ln -srf ../ui php
+)
+
 [ ! -f "$WORKTREE/master/.git/hooks/deployed" ] \
     && cp -RTf --symbolic-link "$ZBX_BOX_ROOT/git.hooks" "$WORKTREE/master/.git/hooks"
 
