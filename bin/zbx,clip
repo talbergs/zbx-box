@@ -50,5 +50,6 @@ CLIPS+=("- *$(zbx,version)* $SHALINK")
 CLIPS+=("git push --delete origin $REF")
 CLIPS+=("git cherry-pick -m 1 -x $SHA")
 CLIPS+=("git merge origin/$REF --no-ff --no-commit")
+CLIPS+=("Code review successful.")
 
 fzclip CLIPS
