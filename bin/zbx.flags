@@ -42,6 +42,8 @@ Templates(){        TAGS=${TAGS:0:9}T;}
 function testLine() {
     # [ ! -f "$1" ] && exit 1
     case "$1" in
+        *ui/include/classes/api/*) API ;;
+        *ui*) Frontend ;;
         *frontends/php/include/classes/api/*) API ;;
         *frontends/php*) Frontend ;;
         *src/libs/zbxdbupgrade/*) Installation ;;

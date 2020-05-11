@@ -52,6 +52,12 @@ pull-feature(){
         git worktree add -f "$WORKTREE/$1" "$1"
         cd $WORKTREE/$1
         git branch --set-upstream-to "origin/$1"
+        if [ -d ./ui ];then
+            (
+                mkdir -p "frontends" && cd $_
+                ln -srf ../ui php
+            )
+        fi
     else
         >&2 echo "Cannot add worktree, $WORKTREE/$1 already exists!"
         return 6
