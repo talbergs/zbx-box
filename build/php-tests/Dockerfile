@@ -53,4 +53,8 @@ RUN docker-php-ext-install zip
 ADD composer.json .
 RUN php composer.phar install
 
+RUN apt-get install -y locales locales-all
+ADD locale.gen /etc/default/locale
+RUN locale-gen
+
 ADD api.sh /api.sh
