@@ -171,6 +171,7 @@ Usage: zbx,db <zref?> [FLAGS..]
 ~ ~
  -P   --postgres                   Apply database to postgres service.
  -Pq  --postgres-query             Quick open repl (use current database).
+ -Aq  --api-db-query               Quick open repl (use current API database, postgres).
  -M   --mariadb                    Apply database to mariadb service.
  -On  --oracle-19c                 Apply database to oracle-19c (new) service.
  -Oo  --oracle-11g                 Apply database to oracle-11g (old) service.
