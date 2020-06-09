@@ -499,8 +499,9 @@ bin/zbx,box:35:    # TODO: This deletes all stopped containers.
 bin/zbx,check:8:### TODO: WIP!
 bin/zbx+config:74:# TODO: must accept -D <variant> (defaults to postgres) to configure for oracle or maria
 bin/zbx+config:75:# TODO: --mailhog flag would create/update media type with correct port and host for emails via api
-bin/zbx,db:148:	# TODO: it creates user surrounded with doublequotes in case of "master"
-bin/zbx,db:97:	# TODO: it creates user surrounded with doublequotes in case of "master"
+bin/zbx,db:149:	# TODO: it creates user surrounded with doublequotes in case of "master"
+bin/zbx,db:47:		# TODO : ./ui issue here > 5.0
+bin/zbx,db:98:	# TODO: it creates user surrounded with doublequotes in case of "master"
 bin/zbx.flags:41:# TODO not all paths are matched, contribution needed.
 bin/zbx+generate:4:## TODO: for now only changelog entry file.
 bin/zbx+generate:5:## TODO: check-strings comment

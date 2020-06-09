@@ -16,3 +16,6 @@ define('PHPUNIT_CONFIG_SOURCE_DIR',  '{{ $CONFIG_SOURCE_DIR }}');
 define('PHPUNIT_CONFIG_DIR',         '{{ $CONFIG_DIR }}');
 define('PHPUNIT_COMPONENT_DIR',      '{{ $COMPONENT_DIR }}');
 define('PHPUNIT_PORT_PREFIX',        '{{ $PORT_PREFIX }}');
+
+global $DB;
+$DB['ENCRYPTION'] = false;
