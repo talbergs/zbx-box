@@ -64,6 +64,29 @@ and it is not suppressed by the --no-verify option.
 <!-- {{{OUTPUT-scripts -->
 
 <details>
+<summary>`zbx,api`</summary>
+
+```
+Wrapped curl and jq to run API calls on current workspace.
+Automatically authorizes and logout.
+~  Usage (vi): zbx,api [method] [?username] [?password]
+~  Usage (pipe): cat patams.json | zbx,api [method] [?username] [?password]
+~  Example:
+~          echo -n '{"output":["name"]}' | zbx,api host.get
+~          # Default authorization: Admin zabbix
+~  Example:
+~          echo -n '{"output":["name"]}' | zbx,api host.get test-user
+~          # Authorization: test-user zabbix
+~  Example:
+~          echo -n '{"output":["name"]}' | zbx,api host.get test-user passwd
+~          # Authorization: test-user passwd
+~  Example:
+~          zbx,api host.get test-user
+~          # Editor instance will be opened to write json params
+~ ~
+```
+</details>
+<details>
 <summary>`zbx,box`</summary>
 
 ```
@@ -499,9 +522,9 @@ bin/zbx,box:35:    # TODO: This deletes all stopped containers.
 bin/zbx,check:8:### TODO: WIP!
 bin/zbx+config:74:# TODO: must accept -D <variant> (defaults to postgres) to configure for oracle or maria
 bin/zbx+config:75:# TODO: --mailhog flag would create/update media type with correct port and host for emails via api
-bin/zbx,db:149:	# TODO: it creates user surrounded with doublequotes in case of "master"
+bin/zbx,db:150:	# TODO: it creates user surrounded with doublequotes in case of "master"
 bin/zbx,db:47:		# TODO : ./ui issue here > 5.0
-bin/zbx,db:98:	# TODO: it creates user surrounded with doublequotes in case of "master"
+bin/zbx,db:99:	# TODO: it creates user surrounded with doublequotes in case of "master"
 bin/zbx.flags:41:# TODO not all paths are matched, contribution needed.
 bin/zbx+generate:4:## TODO: for now only changelog entry file.
 bin/zbx+generate:5:## TODO: check-strings comment

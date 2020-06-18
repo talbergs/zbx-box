@@ -1,0 +1,59 @@
+#!/bin/bash
+### Wrapped curl and jq to run API calls on current workspace.
+### Automatically authorizes and logout.
+## Usage (vi): $0 [method] [?username] [?password]
+## Usage (pipe): cat patams.json | $0 [method] [?username] [?password]
+## Example:
+##         echo -n '{\"output\":[\"name\"]}' | $0 host.get
+##         # Default authorization: Admin zabbix
+## Example:
+##         echo -n '{\"output\":[\"name\"]}' | $0 host.get test-user
+##         # Authorization: test-user zabbix
+## Example:
+##         echo -n '{\"output\":[\"name\"]}' | $0 host.get test-user passwd
+##         # Authorization: test-user passwd
+## Example:
+##         $0 host.get test-user
+##         # Editor instance will be opened to write json params
+##~
+
+source zbx-script-header
+REF=$(zbx-util-guess-ref);
+[ -z $REF ] && exit 4;
+URL=$(zbx,web -n)/api_jsonrpc.php
+METHOD=$1
+if [ -z $METHOD ]; then
+	>&2 echo 'choose method "host.get" or any.'
+	exit 6
+fi
+USERNAME=${2:-Admin}
+PASSWORD=${3:-zabbix}
+
+if [ -p /dev/stdin ]; then
+    while IFS= read line; do
+		PARAMS="${PARAMS}${line}"
+    done
+else
+	echo '{' > /tmp/$METHOD.json
+	echo '  "output": []' >> /tmp/$METHOD.json
+	echo '}' >> /tmp/$METHOD.json
+	$EDITOR /tmp/$METHOD.json
+	PARAMS=$(cat /tmp/$METHOD.json | tr -d "\n")
+fi
+
+TOKEN=`
+echo '{"params": {"password": "'$PASSWORD'", "user": "'$USERNAME'"}, "jsonrpc": "2.0", "method": "user.login", "id": 0}' \
+    | curl --insecure --silent -X POST -H 'Content-Type: application/json-rpc' -d @- $URL \
+    | jq '.result' --raw-output
+`
+echo Begun session $TOKEN
+
+echo '{"params": '$PARAMS', "jsonrpc": "2.0", "method": "'$METHOD'", "id": 0, "auth":"'$TOKEN'"}'
+echo '{"params": '$PARAMS', "jsonrpc": "2.0", "method": "'$METHOD'", "id": 0, "auth":"'$TOKEN'"}' \
+    | curl --insecure --silent -X POST -H 'Content-Type: application/json-rpc' -d @- $URL \
+    | jq --raw-output
+
+echo Logout session $TOKEN
+echo '{"params": {}, "jsonrpc": "2.0", "method": "user.logout", "id": 0, "auth":"'$TOKEN'"}' \
+    | curl --insecure --silent -X POST -H 'Content-Type: application/json-rpc' -d @- $URL \
+    | jq '.result' --raw-output
