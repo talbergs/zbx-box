@@ -1,59 +1,99 @@
 #!/bin/bash
-### Wrapped curl and jq to run API calls on current workspace.
+### Wrapped curl, entr and jq to run API calls on current workspace.
 ### Automatically authorizes and logout.
-## Usage (vi): $0 [method] [?username] [?password]
-## Usage (pipe): cat patams.json | $0 [method] [?username] [?password]
+## Usage: $0 [method] [?username] [?password]
+## Usage: $0 -- [url] [method] [params|params_file] [token]
 ## Example:
-##         echo -n '{\"output\":[\"name\"]}' | $0 host.get
+##         $0 host.get
 ##         # Default authorization: Admin zabbix
 ## Example:
-##         echo -n '{\"output\":[\"name\"]}' | $0 host.get test-user
+##         $0 host.get test-user
 ##         # Authorization: test-user zabbix
 ## Example:
-##         echo -n '{\"output\":[\"name\"]}' | $0 host.get test-user passwd
-##         # Authorization: test-user passwd
-## Example:
+##         $0 host.get
 ##         $0 host.get test-user
-##         # Editor instance will be opened to write json params
+##         # Keep paralell sessions, the same parameters file.
+##         # Useful to run the same API request on different users.
 ##~
 
-source zbx-script-header
-REF=$(zbx-util-guess-ref);
-[ -z $REF ] && exit 4;
-URL=$(zbx,web -n)/api_jsonrpc.php
-METHOD=$1
-if [ -z $METHOD ]; then
-	>&2 echo 'choose method "host.get" or any.'
-	exit 6
-fi
-USERNAME=${2:-Admin}
-PASSWORD=${3:-zabbix}
+# URL=$1
+# METHOD=$2
+# PARAMS=$3 | or file
+# TOKEN=$4 (optional)
+# @stdout response-json
+# @stderr request-params and markers
+curl_jq() {
+	local URL=$1
+	local METHOD=$2
+	local PARAMS=$3
+	local TOKEN=$4
 
-if [ -p /dev/stdin ]; then
-    while IFS= read line; do
-		PARAMS="${PARAMS}${line}"
-    done
-else
-	echo '{' > /tmp/$METHOD.json
-	echo '  "output": []' >> /tmp/$METHOD.json
-	echo '}' >> /tmp/$METHOD.json
-	$EDITOR /tmp/$METHOD.json
-	PARAMS=$(cat /tmp/$METHOD.json | tr -d "\n")
-fi
+	if [ -e "${PARAMS}" ];then
+		PARAMS="$(cat $PARAMS | tr -d '\n')"
+	fi
 
-TOKEN=`
-echo '{"params": {"password": "'$PASSWORD'", "user": "'$USERNAME'"}, "jsonrpc": "2.0", "method": "user.login", "id": 0}' \
-    | curl --insecure --silent -X POST -H 'Content-Type: application/json-rpc' -d @- $URL \
-    | jq '.result' --raw-output
-`
-echo Begun session $TOKEN
+	if [ -z $TOKEN ];then
+		FORMAT='{"params":%s,"jsonrpc":"2.0","method":"%s","id":0}'
+		req=`printf "${FORMAT}" "${PARAMS}" "${METHOD}"`
+	else
+		FORMAT='{"params":%s,"jsonrpc":"2.0","method":"%s","id":0,"auth":"%s"}'
+		req=`printf "${FORMAT}" "${PARAMS}" "${METHOD}" "${TOKEN}"`
+	fi
 
-echo '{"params": '$PARAMS', "jsonrpc": "2.0", "method": "'$METHOD'", "id": 0, "auth":"'$TOKEN'"}'
-echo '{"params": '$PARAMS', "jsonrpc": "2.0", "method": "'$METHOD'", "id": 0, "auth":"'$TOKEN'"}' \
-    | curl --insecure --silent -X POST -H 'Content-Type: application/json-rpc' -d @- $URL \
+	>&2 echo === REQUEST[$METHOD] ===
+	>&2 echo $req | jq --raw-output
+	>&2 echo === RESPONSE[$METHOD] ===
+	echo "$req" | curl \
+		--insecure \
+		--silent \
+		-X POST \
+		-H 'Content-Type: application/json-rpc' \
+		-d @- $URL \
     | jq --raw-output
+}
 
-echo Logout session $TOKEN
-echo '{"params": {}, "jsonrpc": "2.0", "method": "user.logout", "id": 0, "auth":"'$TOKEN'"}' \
-    | curl --insecure --silent -X POST -H 'Content-Type: application/json-rpc' -d @- $URL \
-    | jq '.result' --raw-output
+# URL=$1
+# USERNAME=$2
+# PASSWORD=$3
+# @stdout token string
+get_token() {
+	local URL=$1
+	local USERNAME=$2
+	local PASSWORD=$3
+	local PARAMS=`printf '{"user":"%s","password":"%s"}' "${USERNAME}" "${PASSWORD}"`
+
+	curl_jq "${URL}" user.login "${PARAMS}" \
+		| jq --raw-output '.result'
+}
+
+if [ "$1" == -- ];then
+	shift;URL=$1
+	shift;METHOD=$1
+	shift;PARAMS=$1
+	shift;TOKEN=$1
+	curl_jq "${URL}" "${METHOD}" "${PARAMS}" "${TOKEN}"
+else
+source zbx-script-header
+	URL=$(zbx,web -n)
+	[ -z $URL ] && exit 4
+	URL="${URL}api_jsonrpc.php"
+
+	METHOD=${1:-host.get}
+	USERNAME=${2:-Admin}
+	PASSWORD=${3:-zabbix}
+
+	TOKEN=$(get_token "${URL}" "${USERNAME}" "${PASSWORD}")
+
+	PARAMS_FILE=/tmp/${METHOD}.json
+	if [ ! -e "${PARAMS_FILE}" ];then
+		echo -e '{\n  "output":[]\n}' > $PARAMS_FILE
+	fi
+
+	remove_token() {
+		curl_jq "${URL}" "user.logout" "{}" "${TOKEN}"
+	}
+
+	trap remove_token INT
+	>&2 echo EDIT $PARAMS_FILE .. watching it.. Ctrl+c to exit
+	echo "${PARAMS_FILE}" | entr -p -c $0 -- "${URL}" "${METHOD}" "${PARAMS_FILE}" "${TOKEN}"
+fi

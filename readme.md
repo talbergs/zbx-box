@@ -67,22 +67,21 @@ and it is not suppressed by the --no-verify option.
 <summary>`zbx,api`</summary>
 
 ```
-Wrapped curl and jq to run API calls on current workspace.
+Wrapped curl, entr and jq to run API calls on current workspace.
 Automatically authorizes and logout.
-~  Usage (vi): zbx,api [method] [?username] [?password]
-~  Usage (pipe): cat patams.json | zbx,api [method] [?username] [?password]
+~  Usage: zbx,api [method] [?username] [?password]
+~  Usage: zbx,api -- [url] [method] [params|params_file] [token]
 ~  Example:
-~          echo -n '{"output":["name"]}' | zbx,api host.get
+~          zbx,api host.get
 ~          # Default authorization: Admin zabbix
 ~  Example:
-~          echo -n '{"output":["name"]}' | zbx,api host.get test-user
+~          zbx,api host.get test-user
 ~          # Authorization: test-user zabbix
 ~  Example:
-~          echo -n '{"output":["name"]}' | zbx,api host.get test-user passwd
-~          # Authorization: test-user passwd
-~  Example:
+~          zbx,api host.get
 ~          zbx,api host.get test-user
-~          # Editor instance will be opened to write json params
+~          # Keep paralell sessions, the same parameters file.
+~          # Useful to run the same API request on different users.
 ~ ~
 ```
 </details>

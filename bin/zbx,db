@@ -46,6 +46,7 @@ postgres() {
     if [ ! -z $selenium ];then
 		# TODO : ./ui issue here > 5.0
         files+=(/var/www/html/$REF/frontends/php/tests/selenium/data/data_test.sql)
+        # files+=(/var/www/html/$REF/ui/tests/selenium/data/data_test.sql)
     fi
 
     if [ ! -z $apijson ];then
