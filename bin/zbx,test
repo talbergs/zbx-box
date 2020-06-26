@@ -40,7 +40,7 @@ if [ ! -e $file ];then
     nl $file | zbx-util-color -H "$file"
 fi
 
-[ "--" = $1 ] && shift
+[ "--" = "$1" ] && shift
 
 docker run \
     --rm \

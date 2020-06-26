@@ -94,7 +94,7 @@ Usage: zbx,box [FLAG?] [SERVICE?..]
 ~  If no flag is given - --compose flag is implied.
 ~  Example:
 ~          zbx,box
-~          # A menu will list all available services, the chosen ones will be rised.
+~          # A menu will list all available services, the chosen ones will be riced.
 ~  Example:
 ~          zbx,box caddy postgres
 ~          # This will rise explicitly services.
@@ -104,12 +104,12 @@ Usage: zbx,box [FLAG?] [SERVICE?..]
 ~  Example:
 ~          zbx,box --rm
 ~          # A menu will list all available services, the chosen ones will be removed.
- -C --compose  Lift up the service (will build image if neeed).
+ -C --compose  Lift up the service (will build image if need).
  -R --rmi      Remove image (all layers) for this this service.
  -X --restart  Restart service.
  -S --stop     Stop and remove container.
  -B --build    Rebuild image for this service (using cache).
- -Q --devel    For testing -- teardown service -> build semage -> spin up
+ -Q --devel    For testing -- teardown service -> build image -> spin up
 ```
 </details>
 <details>
@@ -195,6 +195,7 @@ Usage: zbx,db <zref?> [FLAGS..]
  -Pq  --postgres-query             Quick open repl (use current database).
  -Aq  --api-db-query               Quick open repl (use current API database, postgres).
  -M   --mariadb                    Apply database to mariadb service.
+ -Mq  --mariadb-query              Quick open repl (use current database).
  -On  --oracle-19c                 Apply database to oracle-19c (new) service.
  -Oo  --oracle-11g                 Apply database to oracle-11g (old) service.
  -Onq --oracle-19c-query           Quick open repl (use current database).
@@ -428,6 +429,24 @@ Usage: zbx,test <zref?> [phpunit-args..]
 ~      Api tests are run at current workspace.
 ~  Example:
 ~      zbx,test m api_json/ApiJsonTests.php
+~      All api tests are run at "master" workspace.
+~  Before runing this ensure database is in place: zbx,db -API
+~  One workspace can be tested at a time.
+~ ~
+```
+</details>
+<details>
+<summary>`zbx,test-selenium`</summary>
+
+```
+Usage: zbx,test-selenium <zref?> [phpunit-args..]
+~  Runs api tests at given workspace. (uses postgres db only)
+~  Tests are executed on a disposable copy of source code and on separated http server.
+~  Example:
+~      zbx,test-selenium -- --filter="*Host*" api_json/ApiJsonTests.php
+~      Api tests are run at current workspace.
+~  Example:
+~      zbx,test-selenium m api_json/ApiJsonTests.php
 ~      All api tests are run at "master" workspace.
 ~  Before runing this ensure database is in place: zbx,db -API
 ~  One workspace can be tested at a time.

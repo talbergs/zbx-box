@@ -202,6 +202,10 @@ oracle-11g-query() {
     docker exec -it zbx-box-oracle-11g sqlplus "$DBNAME/$DBNAME@XE"
 }
 
+mariadb-query() {
+    docker exec -it zbx-box-mariadb mysql -uroot -pzabbix -D"$DBNAME"
+}
+
 postgres-query() {
     docker exec -it zbx-box-postgres psql -q -U postgres -d "$DBNAME"
 }
@@ -220,6 +224,8 @@ while [[ $# > 0 ]];do case $1 in
     -Aq | --api-db-query ) ex_dbs+=(api-db-query) ;;
     #- Apply database to mariadb service.
     -M  | --mariadb ) ex_dbs+=(mariadb) ;;
+    #- Quick open repl (use current database).
+    -Mq | --mariadb-query ) ex_dbs+=(mariadb-query) ;;
     #- Apply database to oracle-19c (new) service.
     -On | --oracle-19c ) ex_dbs+=(oracle-19c) ;;
     #- Apply database to oracle-11g (old) service.

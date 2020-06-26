@@ -4,7 +4,7 @@
 ## If no flag is given - "--compose" flag is implied.
 ## Example:
 ##         $0
-##         # A menu will list all available services, the chosen ones will be rised.
+##         # A menu will list all available services, the chosen ones will be riced.
 ## Example:
 ##         $0 caddy postgres
 ##         # This will rise explicitly services.
@@ -46,7 +46,7 @@ compose-service() {
         ;;
         oracle-11g)
             zbx-util-color -H "It takes 3 minutes to start, watch container logs for string 'DATABASE IS READY TO USE!' to appear."
-            zbx-util-color -H ".. Also no database persistance will be preserved. If service stop, all data will be lost."
+            zbx-util-color -H ".. Also no database persistence will be preserved. If service stop, all data will be lost."
             zbx-compose $name \
                 --cpus 8 \
                 -p 1521:1521 \
@@ -99,7 +99,7 @@ action_name="Spin up service"
 # keybinds=("--expect" "alt-c,alt-x'")
 if [[ "$1" =~ ^-.* ]]; then
     case $1 in
-        #- Lift up the service (will build image if neeed).
+        #- Lift up the service (will build image if need).
         -C | --compose )
             action_name="Spin up service"
             actions=(compose-service) ;;
@@ -119,7 +119,7 @@ if [[ "$1" =~ ^-.* ]]; then
         -B | --build )
             action_name="Build image"
             actions=(zbx-image-build) ;;
-        #- For testing -- teardown service -> build semage -> spin up
+        #- For testing -- teardown service -> build image -> spin up
         -Q | --devel ) actions=(zbx-decompose zbx-image-build compose-service) ;;
         *) >&2 echo "Unknown parameter passed: $1"; exit 1;;
     esac
