@@ -66,6 +66,9 @@ compose-service() {
                 --shm-size=4g \
                 --rm
         ;;
+        snmp-simulator)
+            zbx-compose $name
+        ;;
         mariadb)
             zbx-compose $name \
                 --volume zbx-box-db-mariadb:/var/lib/mysql

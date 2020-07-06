@@ -85,6 +85,7 @@ build_server() {
             -q
             --enable-server
             --with-libcurl
+            --with-net-snmp
             --with-'$1'
             --prefix="$PWD/dist"
         && make
