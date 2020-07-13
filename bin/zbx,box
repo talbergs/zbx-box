@@ -44,6 +44,12 @@ compose-service() {
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/fpm.conf:/usr/local/etc/php-fpm.d/zabbix.conf \
                 --volume "$ZBX_BOX_ROOT"/decoration:/decoration
         ;;
+        elasticsearch-7.8.0)
+            zbx-compose $name \
+                -p 9200:9200 \
+                -p 9300:9300 \
+                -e "discovery.type=single-node"
+        ;;
         oracle-11g)
             zbx-util-color -H "It takes 3 minutes to start, watch container logs for string 'DATABASE IS READY TO USE!' to appear."
             zbx-util-color -H ".. Also no database persistence will be preserved. If service stop, all data will be lost."

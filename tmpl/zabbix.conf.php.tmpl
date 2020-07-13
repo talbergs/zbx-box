@@ -13,6 +13,11 @@ $ZBX_SERVER = 'zbx-box-{{ $DREF }}-server';
 $ZBX_SERVER_PORT = '10051';
 $IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
 
+/* // mysql-8 override */
+/* $DB['TYPE'] = 'MYSQL'; */
+/* $DB['SERVER'] = 'zbx-box-mysql-8'; */
+/* $DB['USER'] = 'root'; */
+
 /* // mariadb override */
 /* $DB['TYPE'] = 'MYSQL'; */
 /* $DB['SERVER'] = 'zbx-box-mariadb'; */
@@ -31,6 +36,10 @@ $IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
 /* $DB['USER'] = '{{ $DREF }}'; */
 /* $DB['PASSWORD'] = '{{ $DREF }}'; */
 /* $DB['DATABASE'] = 'INDIA'; */
+
+/* // elasticsearch decor */
+/* $HISTORY['url'] = 'http://zbx-box-elasticsearch-7.8.0:9200'; */
+/* $HISTORY['types'] = ['uint', 'dbl', 'str', 'log', 'text']; */
 
 $ZBX_SERVER_NAME = '{{ $DREF }} '.$DB["TYPE"];
 

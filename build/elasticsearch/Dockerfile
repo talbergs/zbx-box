@@ -1,1 +1,0 @@
-FROM elasticsearch:5.6.16-alpine@sha256:5e2dac90ba245b61ef764a44b811cb79f3acda1e8e8ee370a49c0cb5dd70f537
