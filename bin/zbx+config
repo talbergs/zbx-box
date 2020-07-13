@@ -34,6 +34,12 @@ vim(){
     nl $file | zbx-util-color -H "$file"
 }
 
+server-mysql-8(){
+    file=$WORKTREE/$REF/zabbix_server.conf
+    zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=zabbix DBUSER=root DBNAME=$DREF DBHOST=zbx-box-mysql-8 > $file
+    nl $file | zbx-util-color -H "(mysql-8) $file"
+}
+
 server-postgres(){
     file=$WORKTREE/$REF/zabbix_server.conf
     zbx-util-tmpl $ZBX_BOX_ROOT/tmpl/zabbix_server.conf.tmpl REF=$REF DBPASS=zabbix DBUSER=postgres DBNAME=$DREF DBHOST=zbx-box-postgres > $file
@@ -79,6 +85,8 @@ while [[ $# > 0 ]];do case $1 in
     #- Write agentd config only.
     -A  | --agentd ) ex+=(agentd) ;;
     #- Write server config for postgres.
+    -Smy| --server-mysql-8 ) ex+=(server-mysql-8) ;;
+    #- Write server config for oracle 19c.
     -Sp | --server-postgres ) ex+=(server-postgres) ;;
     #- Write server config for oracle 19c.
     -Son| --server-oracle-19c ) ex+=(server-oracle-19c) ;;

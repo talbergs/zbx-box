@@ -72,6 +72,11 @@ compose-service() {
                 --shm-size=4g \
                 --rm
         ;;
+        mysql-8)
+            zbx-compose $name \
+                --volume zbx-box-db-mysql-8:/var/lib/mysql \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name:/etc/mysql/conf.d
+        ;;
         snmp-simulator)
             zbx-compose $name
         ;;

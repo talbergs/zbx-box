@@ -71,6 +71,29 @@ postgres() {
     | zbx-util-color -H "psql -q -U postgres \"$DBNAME\""
 }
 
+mysql-8() {
+    zbx-util-color -H "DROP DATABASE IF EXISTS \"$DBNAME\""
+    docker exec zbx-box-mysql-8 mysql -uroot -pzabbix -e "DROP DATABASE IF EXISTS \`$DBNAME\`"
+    zbx-util-color -H "CREATE DATABASE \"$DBNAME\""
+    docker exec zbx-box-mysql-8 mysql -uroot -pzabbix -e "CREATE DATABASE \`$DBNAME\` CHARACTER SET utf8 COLLATE utf8_bin;"
+    zbx-util-color -H "mysql/schema.sql"
+    docker exec zbx-box-mysql-8 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/schema.sql"
+    zbx-util-color -H "mysql/images.sql"
+    docker exec zbx-box-mysql-8 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/images.sql"
+    zbx-util-color -H "mysql/data.sql"
+    docker exec zbx-box-mysql-8 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/data.sql"
+
+    if [ ! -z $selenium ];then
+        zbx-util-color -H "selenium/data/data_test.sql"
+        docker exec zbx-box-mysql-8 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/frontends/php/tests/selenium/data/data_test.sql"
+    fi
+
+    if [ ! -z $apijson ];then
+        zbx-util-color -H "api_json/data/data_test.sql"
+        docker exec zbx-box-mysql-8 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql"
+    fi
+}
+
 mariadb() {
     zbx-util-color -H "DROP DATABASE IF EXISTS \"$DBNAME\""
     docker exec zbx-box-mariadb mysql -uroot -pzabbix -e "DROP DATABASE IF EXISTS \`$DBNAME\`"
@@ -202,6 +225,10 @@ oracle-11g-query() {
     docker exec -it zbx-box-oracle-11g sqlplus "$DBNAME/$DBNAME@XE"
 }
 
+mysql-8-query() {
+    docker exec -it zbx-box-mysql-8 mysql -uroot -pzabbix -D"$DBNAME"
+}
+
 mariadb-query() {
     docker exec -it zbx-box-mariadb mysql -uroot -pzabbix -D"$DBNAME"
 }
@@ -222,6 +249,8 @@ while [[ $# > 0 ]];do case $1 in
     -Pq | --postgres-query ) ex_dbs+=(postgres-query) ;;
     #- Quick open repl (use current API database, postgres).
     -Aq | --api-db-query ) ex_dbs+=(api-db-query) ;;
+    #- Apply database to mariadb service.
+    -My | --mysql-8 ) ex_dbs+=(mysql-8) ;;
     #- Apply database to mariadb service.
     -M  | --mariadb ) ex_dbs+=(mariadb) ;;
     #- Quick open repl (use current database).
