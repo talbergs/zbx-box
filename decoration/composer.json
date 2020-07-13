@@ -1,1 +1,5 @@
-{"require": {"symfony/var-dumper": "2.8.50"}}
+{
+  "require": {
+    "symfony/var-dumper": "2.8.50"
+  }
+}
