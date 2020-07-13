@@ -1,5 +1,7 @@
 # OS/ARCH - linux/386
 FROM php:7.4-fpm-buster@sha256:215232c33da867319f013815a8e136d4a7380ff0dafc286c11e33e80356d5a43
+# FROM php:7.4.4-fpm-buster@sha256:9ee7fe0bbb60429cfe65356dd16961502bd39688e16bc656f97949dfeda6cad8
+# FROM php:7.4.6-fpm-buster@sha256:8bb5701a93a9b85dabdf432bea9ea2d7f2edaf8e6bccf0bb0cce6331f2429547
 
 ## install bcmath extension
 RUN docker-php-ext-install bcmath

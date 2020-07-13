@@ -50,7 +50,8 @@ postgres() {
     fi
 
     if [ ! -z $apijson ];then
-        files+=(/var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql)
+        files+=(/var/www/html/$REF/ui/tests/api_json/data/data_test.sql)
+        # files+=(/var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql)
     fi
 
     (
