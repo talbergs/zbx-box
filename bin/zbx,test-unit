@@ -28,4 +28,4 @@ docker run \
     --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
     -p 8020:8020 \
     -it \
-    $IMG /test/vendor/bin/phpunit --colors=always --bootstrap ./ui/tests/unit/bootstrap.php ./ui/tests/unit
+    $IMG /test/vendor/bin/phpunit $@ --colors=always --bootstrap ./ui/tests/unit/bootstrap.php ./ui/tests/unit
