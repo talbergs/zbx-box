@@ -18,6 +18,7 @@ fzclip() {
 CLIPS=("<[~$JIRAUSER]> CLOSED")
 CLIPS+=("<[~$JIRAUSER]> WON'T FIX")
 CLIPS+=("*(1)* No translation string changes.")
+CLIPS+=("Code review successful.")
 
 [ -z $REF ] && fzclip CLIPS && exit;
 
@@ -43,8 +44,8 @@ CLIPS+=("<[~$JIRAUSER]> CLOSED with minor fix in $SHALINK")
 CLIPS+=("<[~$JIRAUSER]> RESOLVED in $SHALINK")
 CLIPS+=("<[~$JIRAUSER]> IMPLEMENTED in $SHALINK")
 CLIPS+=("$SHALINK")
-CLIPS+=("IMPLEMENTED in development branch $REFLINK")
-CLIPS+=("FIXED in development branch $REFLINK")
+CLIPS+=("Implemented in development branch $REFLINK")
+CLIPS+=("Fixed in development branch $REFLINK")
 CLIPS+=("- *$(zbx,version)* $SHALINK")
 
 CLIPS+=("git push --delete origin $REF")
