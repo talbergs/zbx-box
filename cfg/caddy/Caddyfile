@@ -57,6 +57,11 @@ encode zstd brotli
 #     # ###############################
 #     # # php-5.4 # php-7.2 # php-7.4 #
 ##{{{## ###############################
+@php-balance {
+    host balance.*
+}
+php_fastcgi @php-balance zbx-box-php72-fpm:9000 zbx-box-php74-fpm:9000
+
 @php72 {
     host 72.*
 }
@@ -71,6 +76,24 @@ php_fastcgi @php74 zbx-box-php74-fpm:9000
     host 54.*
 }
 php_fastcgi @php54 zbx-box-php54-fpm:9000
+
+
+##}}}## ###############################
+#     # ##   REVERSE PROXIES         ##
+#     # ###############################
+#     # #                             #
+##{{{## ###############################
+# @vault {
+#     host *
+# }
+# reverse_proxy @vault {
+#     to zbx-box-vault:1234
+# }
+
+@lan {
+    host 192.168.6.32
+}
+php_fastcgi @lan zbx-box-php72-fpm:9000
 
 ##}}}## ###############################
 #     # ##       FILE BROWSER        ##

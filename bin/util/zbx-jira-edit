@@ -1,0 +1,158 @@
+#!/usr/bin/env php
+<?php
+
+[, $json_file, $issuenr] = $argv;
+[
+    'fields' => [
+        'summary' => $title,
+        'description' => $description,
+        'comment' => [
+            'comments' => $comments,
+        ],
+    ],
+] = json_decode(file_get_contents($json_file), true);
+
+function marshal(array $lines): string {
+    return implode("\r\n", array_map(fn($l) => substr($l, 4), $lines));
+}
+
+function unmarshal(string $str): string {
+    return implode("\n", array_map(fn($l) => "    $l", explode("\r\n", $str)));
+}
+
+$orig_comments = [];
+$comments_str = '';
+foreach ($comments as $comment) {
+    ['body' => $body, 'id' => $id, 'author' => ['displayName' => $author]] = $comment;
+    $meta = [
+        'author' => $author,
+        'id' => $id,
+        'public' => true,
+    ];
+
+    if (array_key_exists('visibility', $comment) && $comment['visibility']['value'] === 'Developers') {
+        $meta['public'] = false;
+    }
+
+    $orig_comments[$id] = ['body' => $body, 'id' => $id, 'public' => $meta['public']];
+
+    $comments_str .= implode(PHP_EOL, [
+        PHP_EOL,
+        '<' . json_encode($meta),
+        unmarshal($body),
+        '/>',
+    ]);
+}
+
+$mdfile = $json_file . '_live';
+$mdstr = implode(PHP_EOL, [
+    $title,
+    '<',
+    unmarshal($description),
+    '/>',
+    $comments_str
+]);
+
+file_put_contents($mdfile, $mdstr);
+
+system(getenv('EDITOR') . ' ' . $mdfile . ' > `tty`', $exit_code);
+
+if ($exit_code != 0) {
+    fwrite(STDERR, 'Editing was canceled.' . PHP_EOL);
+    exit(1);
+}
+
+$newmdfile = explode("\n", file_get_contents($mdfile));
+$new_title = array_shift($newmdfile);
+
+$ticket_fields = [];
+if ($new_title !== $title) {
+	$ticket_fields['summary'] = $new_title;
+}
+
+function fetch_section(array &$lines): array {
+    $attr_line = array_shift($lines);
+    while (($attr_line[0] ?? '') !== '<') {
+        $attr_line = array_shift($lines);
+        if ($attr_line === null) {
+            $attr_line = '<{}';
+            break;
+        }
+    }
+
+    $end = array_search('/>', $lines);
+    $sect = array_splice($lines, 0, $end + 1);
+    array_pop($sect);
+
+    $attr = json_decode(substr($attr_line, 1) ?: '{}', true);
+
+    return [marshal($sect), $attr];
+}
+
+[$new_description] = fetch_section($newmdfile);
+
+if ($new_description !== $description) {
+	$ticket_fields['description'] = $new_description;
+}
+
+if ($ticket_fields) {
+	$basicauth = sprintf('%s:%s', getenv('JIRAUSER'), getenv('JIRAPASS'));
+	$apiurl = sprintf('%s/rest/api/latest/issue/%s', getenv('JIRAURL'), $issuenr);
+	/* `curl -u $basicauth --data 'json_encode($ticket_fields)' -X PUT -H "Content-Type: application/json" $apiurl`; */
+	// ^ THIS WORKS
+    echo 'Updating ticket_fields: '.json_encode($ticket_fields, JSON_PRETTY_PRINT).PHP_EOL;
+}
+
+while ($newmdfile) {
+    [$comment, $attr] = fetch_section($newmdfile);
+
+    // ==========MANUAL==========
+    // https://docs.atlassian.com/software/jira/docs/api/REST/8.11.0/#api/2/issue-getComments
+    //
+    // UPDATING
+    //
+    // PUT /rest/api/2/issue/$issuenr/comment/$attr['id']
+    /* { */
+    /*     "body": "ssssssssss", */
+    /*     "visibility": { */
+    /*         "type": "role", */
+    /*         "value": "Developers" */
+    /*     } */
+    /* } */
+
+    // POST /rest/api/2/issue/$issuenr/comment
+    //
+    /* { */
+    /*     "body": "ssssssssss", */
+    /*     "visibility": { */
+    /*         "type": "role", */
+    /*         "value": "Developers" */
+    /*     } */
+    /* } */
+
+    if (array_key_exists('id', $attr)) {
+        $orig_comment = $orig_comments[$attr['id']];
+
+        if ($orig_comment['body'] !== $comment) {
+            echo $comment.PHP_EOL;
+            echo '^^ updating ^^'.PHP_EOL;
+
+            /* $basicauth = sprintf('%s:%s', getenv('JIRAUSER'), getenv('JIRAPASS')); */
+            /* $apiurl = sprintf('%s/rest/api/latest/issue/%s', getenv('JIRAURL'), $ticket); */
+
+            /* $json = `curl -u $basicauth -X PUT -H "Content-Type: application/json" $apiurl`; */
+            /* echo "\n{$json}\n"; */
+        }
+
+        if ($orig_comment['public'] !== $attr['public']) {
+            echo '^^ updating visibility ^^'.PHP_EOL;
+        }
+    } else {
+        if (trim($comment)) {
+            echo $comment.PHP_EOL;
+            echo '^^ create ^^'.PHP_EOL;
+        }
+    }
+}
+
+exit(0);

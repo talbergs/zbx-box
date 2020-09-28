@@ -1,4 +1,12 @@
-#!/bin/sh
+﻿#!/bin/sh
 # TODO: make it pull info from jira if in feature branch, then notify if info has changed
 # https://support.zabbix.com/rest/api/latest/issue/ZBX-17468
 # https://docs.atlassian.com/software/jira/docs/api/REST/8.5.1/
+
+
+$public
+0
+$author
+Miks Kronkalns
+
+*(3)* [AF] On host group mass enable/disable there are duplicate entries in audit log about it. One with action ENABLE. other with action UPDATE (with details about changed state). I propose to follow this logic. If host status is updated there should be audit entry with action "ENABLE/DISABLE". If host has it's other fields updated (in scope of this task, we are taking into account only fields from hosts table), there should be audit entry with action UPDATE. If host has both, updated fields and changes state, then two audit entries should be present. One with action UPDATE and list of changes (except state). One with action ENABLE/DISABLE. <[~vmurzins]> {color:#008000}As discussed on 30.03{color} Mandatory requirements are the following: * There should be no duplicate entry about status update. (having only UPDATE audit entry is fine). * There should be no entries about hosts having status update, when new status is same as previous one. <[~talbergs]> If I understand you correctly, this should be enough to fix this - RESOLVED in [6bd8ca7ed|https://git.zabbix.com/projects/ZBX/repos/zabbix/commits/6bd8ca7ed] <[~Miks.Kronkalns]> In case if only status field is changed, it still need to show enable/disable, instead of update + status field change in details column. I would consider explicit check in {{CAudit}} to change action name in case if there is only one fields in {{$objects_diff}} and that field is {{status}}.  Maybe you have better ideas. REOPENED <[~talbergs]> This is acknowledged, see above: "having only UPDATE audit entry is fine". And it seems reasonable. Yes better idea is presented in *(2)* - in short - to bring order into actions first and the formatting you ask for will be implemented. <[~Miks.Kronkalns]> CLOSED

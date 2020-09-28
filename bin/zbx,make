@@ -62,6 +62,7 @@ build_server_oracle() {
         && ./configure
             -q
             --enable-server
+            --with-openssl
             --with-oracle-include=/usr/include/oracle/19.6/client
             --with-oracle-lib=/usr/lib/oracle/19.6/client/lib
             --prefix="$PWD/dist"
@@ -83,9 +84,11 @@ build_server() {
         ./bootstrap.sh
         && ./configure
             -q
+            --with-openssl
             --enable-server
             --with-libcurl
             --with-net-snmp
+            --with-ssh2
             --with-'$1'
             --prefix="$PWD/dist"
         && make

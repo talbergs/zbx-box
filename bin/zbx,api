@@ -77,6 +77,7 @@ source zbx-script-header
 	URL=$(zbx,web -n)
 	[ -z $URL ] && exit 4
 	URL="${URL}api_jsonrpc.php"
+	# URL="https://balance.localhost/ZBXNEXT-1660-5.1/api_jsonrpc.php"
 
 	METHOD=${1:-host.get}
 	USERNAME=${2:-Admin}
@@ -84,7 +85,7 @@ source zbx-script-header
 
 	TOKEN=$(get_token "${URL}" "${USERNAME}" "${PASSWORD}")
 
-	PARAMS_FILE=/tmp/${METHOD}.json
+	PARAMS_FILE=$PWD/${METHOD}.json
 	if [ ! -e "${PARAMS_FILE}" ];then
 		echo -e '{\n  "output":[]\n}' > $PARAMS_FILE
 	fi

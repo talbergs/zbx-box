@@ -35,4 +35,5 @@ RUN apk --update --no-cache add bash gettext
 RUN apk --update --no-cache add postgresql-dev
 RUN adduser zabbix --disabled-password
 RUN apk --update --clean-protected --no-cache add sqlite-dev
+
 USER zabbix

@@ -1,0 +1,16 @@
+[http.routers]
+  [http.routers.test]
+    entryPoints = ["web"]
+    rule = "PathPrefix(`/ooo`)"
+    service = "test"
+    middlewares = ["test"]
+
+[http.middlewares]
+  [http.middlewares.test.stripPrefix]
+    prefixes = ["/ooo"]
+    forceSlash = false
+
+[http.services]
+  [http.services.test.loadBalancer]
+    [[http.services.test.loadBalancer.servers]]
+      url = "http://zbx-box-caddy/"

@@ -49,9 +49,13 @@ postgres() {
         # files+=(/var/www/html/$REF/ui/tests/selenium/data/data_test.sql)
     fi
 
+    if [ ! -z $integration_data ];then
+        files+=(/var/www/html/$REF/frontends/php/tests/integration/data/data_test.sql)
+    fi
+
     if [ ! -z $apijson ];then
-        files+=(/var/www/html/$REF/ui/tests/api_json/data/data_test.sql)
-        # files+=(/var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql)
+        # files+=(/var/www/html/$REF/ui/tests/api_json/data/data_test.sql)
+        files+=(/var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql)
     fi
 
     (
@@ -70,6 +74,29 @@ postgres() {
     ) \
     | docker exec -i zbx-box-postgres psql -q -U postgres \
     | zbx-util-color -H "psql -q -U postgres \"$DBNAME\""
+}
+
+mysql-5() {
+    zbx-util-color -H "DROP DATABASE IF EXISTS \"$DBNAME\""
+    docker exec zbx-box-mysql-5 mysql -uroot -pzabbix -e "DROP DATABASE IF EXISTS \`$DBNAME\`"
+    zbx-util-color -H "CREATE DATABASE \"$DBNAME\""
+    docker exec zbx-box-mysql-5 mysql -uroot -pzabbix -e "CREATE DATABASE \`$DBNAME\` CHARACTER SET utf8 COLLATE utf8_bin;"
+    zbx-util-color -H "mysql/schema.sql"
+    docker exec zbx-box-mysql-5 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/schema.sql"
+    zbx-util-color -H "mysql/images.sql"
+    docker exec zbx-box-mysql-5 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/images.sql"
+    zbx-util-color -H "mysql/data.sql"
+    docker exec zbx-box-mysql-5 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/database/mysql/data.sql"
+
+    if [ ! -z $selenium ];then
+        zbx-util-color -H "selenium/data/data_test.sql"
+        docker exec zbx-box-mysql-5 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/frontends/php/tests/selenium/data/data_test.sql"
+    fi
+
+    if [ ! -z $apijson ];then
+        zbx-util-color -H "api_json/data/data_test.sql"
+        docker exec zbx-box-mysql-5 mysql -uroot -pzabbix -D "$DBNAME" -e "source /var/www/html/$REF/frontends/php/tests/api_json/data/data_test.sql"
+    fi
 }
 
 mysql-8() {
@@ -251,7 +278,9 @@ while [[ $# > 0 ]];do case $1 in
     #- Quick open repl (use current API database, postgres).
     -Aq | --api-db-query ) ex_dbs+=(api-db-query) ;;
     #- Apply database to mariadb service.
-    -My | --mysql-8 ) ex_dbs+=(mysql-8) ;;
+    -My5| --mysql-5 ) ex_dbs+=(mysql-5) ;;
+    #- Apply database to mariadb service.
+    -My8| --mysql-8 ) ex_dbs+=(mysql-8) ;;
     #- Apply database to mariadb service.
     -M  | --mariadb ) ex_dbs+=(mariadb) ;;
     #- Quick open repl (use current database).
@@ -264,6 +293,8 @@ while [[ $# > 0 ]];do case $1 in
     -Onq| --oracle-19c-query ) ex_dbs+=(oracle-19c-query) ;;
     #- Quick open repl (use current database).
     -Ooq| --oracle-11g-query ) ex_dbs+=(oracle-11g-query) ;;
+    #- Apply "integration" data set.
+    -I  | --integration-data ) integration_data=1 ;;
     #- Apply "api_json" data set.
     -A  | --api-json ) apijson=1 ;;
     #- Prepare API json database (postgres)

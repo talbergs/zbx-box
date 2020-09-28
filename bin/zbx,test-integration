@@ -1,0 +1,31 @@
+#!/bin/bash
+### Usage: $0 <zref?> [phpunit-args..]
+## Runs unit tests at given workspace.
+##~
+source zbx-script-header
+source zbx-get-ref
+
+IMG=$(zbx-image-id php-tests)
+
+if [ -z "$IMG" ]; then
+    zbx-image-build php-tests
+    IMG=$(zbx-image-id php-tests)
+fi
+
+[ "--" = "$1" ] && shift
+
+docker run \
+    --rm \
+    --network zbx-box \
+    --user root \
+    --volume zbx-box:/var/www/html \
+    --label zbx-box-tests \
+    --name zbx-box-tests \
+    --workdir /var/www/html/$REF \
+    -v $ZBX_BOX_ROOT/build/php-tests/api.sh:/api.sh \
+    --volume "$ZBX_BOX_ROOT"/cfg/php-tests/php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
+    --volume "$ZBX_BOX_ROOT"/cfg/php-tests/fpm.conf:/usr/local/etc/php-fpm.d/zabbix.conf \
+    --volume "$ZBX_BOX_ROOT"/decoration:/decoration \
+    -p 8020:8020 \
+    -it \
+    $IMG /test/vendor/bin/phpunit $@ --colors=always --bootstrap ./ui/tests/unit/bootstrap.php ./ui/tests/integration

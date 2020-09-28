@@ -37,9 +37,11 @@ compose-service() {
 
     name=$1
     case $name in
-        php54-fpm | php72-fpm | php74-fpm )
+        php54-fpm | php56-fpm | php70-fpm | php72-fpm | php74-fpm )
             zbx-compose $name \
                 --user $(id -u):$(id -g) \
+                --add-host localhost:192.168.1.101 \
+                -v /home/ada/zabbix-dev/feature/ZBXNEXT-1660-5.1/certs:/certs \
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/php.ini:/usr/local/etc/php/conf.d/zabbix.ini \
                 --volume "$ZBX_BOX_ROOT"/cfg/$name/fpm.conf:/usr/local/etc/php-fpm.d/zabbix.conf \
                 --volume "$ZBX_BOX_ROOT"/decoration:/decoration
@@ -72,10 +74,18 @@ compose-service() {
                 --shm-size=4g \
                 --rm
         ;;
+        mysql-5)
+            zbx-compose $name \
+                --volume zbx-box-db-mysql-5:/var/lib/mysql \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name:/etc/mysql/conf.d
+        ;;
         mysql-8)
             zbx-compose $name \
                 --volume zbx-box-db-mysql-8:/var/lib/mysql \
                 --volume "$ZBX_BOX_ROOT"/cfg/$name:/etc/mysql/conf.d
+        ;;
+        ssh-server)
+            zbx-compose $name
         ;;
         snmp-simulator)
             zbx-compose $name
@@ -100,6 +110,35 @@ compose-service() {
         mailhog)
             zbx-compose $name \
                 --publish 8025:8025
+        ;;
+        traefik)
+            # TODO: audit logs to stdout
+            docker run \
+                --detach \
+                --rm \
+                --network zbx-box \
+                --label zbx-box=traefik \
+                -p 8090:8080 \
+                -p 8070:8070 \
+                --volume "$ZBX_BOX_ROOT"/cfg/$name:/etc/traefik \
+                --name zbx-box-traefik \
+                traefik
+        ;;
+        vault)
+            # TODO: audit logs to stdout
+            docker run \
+                --rm \
+                --network zbx-box \
+                --volume zbx-box:/var/www/html \
+                --label zbx-box=vault \
+                --detach \
+                --cap-add=IPC_LOCK \
+                -e 'VAULT_DEV_ROOT_TOKEN_ID=zabbix' \
+                -e 'VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:1234' \
+                -e 'VAULT_LOG_LEVEL=trace' \
+                --publish 1234:1234 \
+                --name zbx-box-vault \
+                vault
         ;;
         * )
             >&2 echo "Unknown service '$name'";

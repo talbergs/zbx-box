@@ -1,0 +1,45 @@
+#!/usr/bin/env php
+<?php
+
+preg_match('/.*?\/feature\/(\w+\-\d+).*$/', getcwd(), $matches);
+
+if (!$matches) {
+    fwrite(STDERR, 'Cannot determine REF' . PHP_EOL);
+    exit(3);
+}
+
+[, $ticket] = $matches;
+
+$basicauth = sprintf('%s:%s', getenv('JIRAUSER'), getenv('JIRAPASS'));
+$apiurl = sprintf('%s/rest/api/latest/issue/%s', getenv('JIRAURL'), $ticket);
+
+$json = `curl -u $basicauth -X GET -H "Content-Type: application/json" $apiurl`;
+/* $json = file_get_contents('/home/ada/.zbx-box/jira-ticket.json'); */
+
+if ($json === null) {
+    fwrite(STDERR, 'Could not fetch from ' . $apiurl . PHP_EOL);
+    exit(4);
+} else {
+    fwrite(STDERR, 'Fetched ' . $apiurl . PHP_EOL);
+}
+
+$obj = json_decode($json);
+if (json_last_error() !== JSON_ERROR_NONE) {
+    fwrite(STDERR, $json . PHP_EOL);
+    fwrite(STDERR, '^ not a JSON' . PHP_EOL);
+    exit(5);
+}
+
+$WORKTREE = getenv('WORKTREE');
+`mkdir -p $WORKTREE/jira`;
+
+$jirafile = $WORKTREE . '/jira/' . $ticket;
+$written = file_put_contents($jirafile, $json);
+if ($written === false || $written !== strlen($json)) {
+    fwrite(STDERR, $json . PHP_EOL);
+    fwrite(STDERR, '^ not saved to ' . $jirafile . PHP_EOL);
+    exit(6);
+}
+
+fwrite(STDOUT, $jirafile);
+exit(0);

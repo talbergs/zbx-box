@@ -1,0 +1,19 @@
+#!/bin/bash
+### Usage: $0
+## Allows to edit/add jira comments.
+## Allows to view jira ticket description.
+##~
+source zbx-script-header
+source zbx-get-ref
+
+issuenr=$(grep -oP "\w+\-\d+" <<< $REF)
+issuenr="ZBXNEXT-6107"
+
+issuefile=$WORKTREE/jira/$issuenr
+if [ ! -f $issuefile ]; then
+    issuefile=$(zbx-jira-fetch $issuenr)
+fi
+
+echo $issuefile
+
+zbx-jira-edit $issuefile $issuenr && zbx-jira-sync

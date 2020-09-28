@@ -1,0 +1,5 @@
+#!/bin/sh
+notify-send "sss"
+# TODO: make it pull info from jira if in feature branch, then notify if info has changed
+# https://support.zabbix.com/rest/api/latest/issue/ZBX-17468
+# https://docs.atlassian.com/software/jira/docs/api/REST/8.5.1/

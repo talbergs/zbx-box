@@ -1,0 +1,7 @@
+{
+    "require": {
+        "phpunit/phpunit": "5.7.27",
+        "phpunit/phpunit-selenium": "^3.0",
+        "php-webdriver/webdriver": "^1.8"
+    }
+}

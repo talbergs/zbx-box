@@ -1,0 +1,7 @@
+# OS/ARCH linux/amd64
+FROM mysql:5.7
+
+ENV MYSQL_ROOT_PASSWORD=zabbix
+
+ENV MYSQL_USER=zabbix
+ENV MYSQL_PASSWORD=zabbix

@@ -50,3 +50,5 @@ RUN docker-php-ext-install pgsql
 
 # MySql
 RUN docker-php-ext-install mysqli
+
+RUN docker-php-ext-install yaml
